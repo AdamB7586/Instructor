@@ -1,0 +1,26 @@
+{
+    "name": "adamb/inst",
+    "description": "Instructor management",
+    "type": "library",
+    "require": {
+        "adamb/database": "^1.0",
+        "adamb/google-maps-geocoder": "^4.2"
+    },
+    "license": "None",
+    "authors": [
+        {
+            "name": "Adam Binnersley",
+            "email": "abinnersley@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Instructor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Instructor\\Tests\\": "tests/"
+        }
+    }
+}
