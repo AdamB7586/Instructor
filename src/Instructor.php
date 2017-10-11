@@ -11,6 +11,7 @@ class Instructor {
     protected $status = array(0 => 'Pending', 1 => 'Active', 2 => 'Disabled', 3 => 'Suspended', 4 => 'Delisted');
     
     public $instructor_table = 'instructors';
+    public $testimonial_table = 'testimonials';
     
     /**
      * Constructor
@@ -20,16 +21,21 @@ class Instructor {
         self::$db = $db;
     }
     
+    /**
+     * Returns the status text for the given status number
+     * @param int $status This should be the status number you wish to get the test for
+     * @return string This will be the status text
+     */
     public function instructorStatus($status){
         return $this->status[intval($status)];
     }
     
     /**
      * Get a list of all of the instructors 
-     * @param inst|false $active If set to a number should be the active value else should be set to false for all instructors
+     * @param inst $active If set to a number should be the active value else should be set to false for all instructors
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
-    public function getAllInstructors($active = false){
+    public function getAllInstructors($active = 1){
         return self::$db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('FINO' => 'DESC'));
     }
     
@@ -42,12 +48,24 @@ class Instructor {
         return self::$db->select($this->instructor_table, array('fino' => intval($fino)));
     }
     
-    public function addInstructor($fino, $name, $domain, $additionalInfo = []){
-        
-    }
-    
-    public function old_addInstructor($fino, $name, $gender, $phone, $mobile, $email, $website, $about, $offers, $areas, $mainarea, $pcode, $pcodeareas, $passplus, $hour, $two, $block, $midway, $semi, $boost, $week, $residential, $manual, $auto, $password){
-        return $this->db->insert(self::INST_TABLE, array('fino' => $fino, 'name' => $name, 'gender' => $gender, 'phone' => $phone, 'mobile' => $mobile, 'email' => $email, 'website' => $website, 'about' => $about, 'offers' => $offers, 'areas' => $areas, 'mainarea' => $mainarea, 'pcodeareas' => $pcode, 'postcodes' => $pcodeareas, 'passplus' => intval($passplus), 'hour' => intval($hour), 'two' => intval($two), 'block' => intval($block), 'midway' => intval($midway), 'semi' => intval($semi), 'boost' => intval($boost), 'week' => intval($week), 'residential' => intval($residential), 'manual' => intval($manual), 'automatic' => intval($auto), 'password' => $password, 'hash' => md5($password)));
+    /**
+     * Add a new instructor to the database
+     * @param int $fino This should be the instructors unique franchise number
+     * @param string $name The instructors name
+     * @param string $email The email address to associate with the instructor
+     * @param string $domain The website that this instructor has been assigned
+     * @param string $gender The instructors gender set to either M or F
+     * @param string $password The password that the instructor has been assigned
+     * @param array $additionalInfo Any additional information can be added to this as an array
+     * @return boolean If the information has been successfully added will return true else will return false
+     */
+    public function addInstructor($fino, $name, $email, $domain, $gender, $password, $additionalInfo = []){
+        if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
+            if(empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
+            if(empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
+            return self::$db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password)/*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
+        }
+        return false;
     }
     
     /**
@@ -59,13 +77,8 @@ class Instructor {
     public function updateInstructor($fino, $information = []){
         if(empty(trim($information['about']))){$information['about'] = NULL;}
         if(empty(trim($information['offers']))){$information['offers'] = NULL;}
+        if(empty(trim($information['notes']))){$information['notes'] = NULL;}
         return self::$db->update($this->instructor_table, $information, array('fino' => $fino));
-    }
-    
-    public function old_updateInstructor($fino, $name, $areas, $mainarea, $email, $phone, $mobile, $status, $website, $about, $pcodeareas, $pcareas, $gsp, $passplus, $offers, $hour, $two, $block, $midway, $semi, $boost, $week, $manual, $auto, $residential, $notes = ''){
-        if(empty(trim($about))){$about = NULL;}
-        if(empty(trim($offers))){$offers = NULL;}
-        return $this->db->update(self::INST_TABLE, array('name' => $name, 'areas' => $areas, 'mainarea' => $mainarea, 'email' => $email, 'phone' => $phone, 'mobile' => $mobile, 'active' => $status, 'website' => $website, 'about' => $about, 'pcodeareas' => $pcodeareas, 'postcodes' => $pcareas, 'gsp' => intval($gsp), 'passplus' => intval($passplus), 'offers' => $offers, 'hour' => intval($hour), 'two' => intval($two), 'block' => intval($block), 'midway' => intval($midway), 'semi' => intval($semi), 'boost' => intval($boost), 'week' => intval($week), 'manual' => intval($manual), 'automatic' => intval($auto), 'residential' => intval($residential), 'notes' => $notes), array('fino' => $fino));
     }
     
     /**
@@ -96,11 +109,26 @@ class Instructor {
         return false;
     }
     
-    public function getInstructors($where, $limit = 50){
-        $where['active'] = 1;
+    /**
+     * Gets a list of all of the instructors matching the given criteria
+     * @param array $where This should be the criteria that the database query needs to match
+     * @param int $limit This should be the maximum number of instructors to display
+     * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
+     * @return array|false Will return a list of instructors if any match the criteria else will return false
+     */
+    public function getInstructors($where, $limit = 50, $active = true){
+        if($active === true){
+            $where['active'] = 1;
+        }
         return $this->listInstructors(self::$db->selectAll($this->instructor_table, $where, '*', 'RAND()', $limit));
     }
     
+    /**
+     * Find the closest instructors to the given postcode
+     * @param string $postcode This should be the postcode that you wish to find the closest instructor to
+     * @param int $limit The maximum number of instructors to display
+     * @return array|boolean If any instructors exist they will be returned as an array else will return false
+     */
     public function findClosestInstructors($postcode, $limit = 50){
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         $maps->geocode();
@@ -110,23 +138,48 @@ class Instructor {
         return false;
     }
     
+    /**
+     * List of all of the instructors and get additional variables
+     * @param array $instructors An array of the instructors results from the database so additional information can be retrieved and added
+     * @return array|false If any instructors are returned their information will be returned else if none exists will return false
+     */
     private function listInstructors($instructors){
         if(is_array($instructors)){
             foreach($instructors as $i => $instructor){
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
                 $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
-                //$instructors[$i]['testimonials'] = $this->instTestimonials($instructor['fino']); Need to fix this 
+                $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['fino']);
             }
             return $instructors;
         }
         return false;
     }
     
+    /**
+     * Return any instructor testimonials in a random order
+     * @param int $fino This should be the instructors unique franchise number
+     * @param int $limit The maximum number of testimonials to show
+     * @return array|false If any testimonials exist they will be returned as an array else will return false
+     */
+    public function instTestimonials($fino, $limit = 5){
+        return $this->db->selectAll($this->testimonial_table, array('fino' => intval($fino)), '*', 'RAND()', intval($limit));
+    }
+    
+    /**
+     * Return only the first name for the instructor
+     * @param string $name The full name for the instructor
+     * @return string Will return only the first name
+     */
     private function firstname($name){
         $names = explode(' ', $name);
         return $names[0];
     }
     
+    /**
+     * Format the postcode string for viewing
+     * @param string $postcodes The list of postcodes that the instructor covers
+     * @return string A formated list will be returned to make it more easily readable
+     */
     private function instPostcodes($postcodes){
         return str_replace(',', ', ', substr($postcodes, 1, -1));
     }

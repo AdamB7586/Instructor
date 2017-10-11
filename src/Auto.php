@@ -3,12 +3,24 @@
 namespace Instructor;
 
 class Auto extends Instructor{
-    
-    public function getInstructors($where, $limit = 50) {
+    /**
+     * Get automatic instructors from the database
+     * @param array $where This should be the queries that need to be matched
+     * @param int $limit The maximum number of instructors to display
+     * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
+     * @return array|false Returns all of the instructors which match the criteria given if any exists else if no instructors exist will return false
+     */
+    public function getInstructors($where, $limit = 50, $active = true) {
         $where['automatic'] = 1;
-        return parent::getInstructors($where, $limit);
+        return parent::getInstructors($where, $limit, $active);
     }
     
+    /**
+     * Find all of the closest instructors to the given postcode
+     * @param string $postcode This should be the postcode that you want to find the closest instructors to
+     * @param int $limit The maximum number of instructors to display
+     * @return array|false If any instructors cover the area will return an array of their details else will return false 
+     */
     public function findClosestInstructors($postcode, $limit = 50) {
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         $maps->geocode();
