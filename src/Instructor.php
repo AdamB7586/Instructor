@@ -13,6 +13,8 @@ class Instructor {
     public $instructor_table = 'instructors';
     public $testimonial_table = 'testimonials';
     
+    public $display_testimonials = false;
+    
     /**
      * Constructor
      * @param Database $db This should be an instance of the database class
@@ -162,7 +164,10 @@ class Instructor {
      * @return array|false If any testimonials exist they will be returned as an array else will return false
      */
     public function instTestimonials($fino, $limit = 5){
-        return $this->db->selectAll($this->testimonial_table, array('fino' => intval($fino)), '*', 'RAND()', intval($limit));
+        if($this->display_testimonials === true){
+            return $this->db->selectAll($this->testimonial_table, array('fino' => intval($fino)), '*', 'RAND()', intval($limit));
+        }
+        return false;
     }
     
     /**
