@@ -129,13 +129,17 @@ class Instructor {
      * Find the closest instructors to the given postcode
      * @param string $postcode This should be the postcode that you wish to find the closest instructor to
      * @param int $limit The maximum number of instructors to display
+     * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructors($postcode, $limit = 50){
+    public function findClosestInstructors($postcode, $limit = 50, $cover = true){
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         $maps->geocode();
         if($maps->getLatitude()){
-            return $this->listInstructors(self::$db->query("SELECT *, (3959 * acos(cos(radians('".$maps->getLatitude()."')) * cos(radians(lat)) * cos(radians(lng) - radians('".$maps->getLongitude()."')) + sin(radians('".$maps->getLatitude()."')) * sin(radians(lat)))) AS `distance` FROM `".self::INST_TABLE."` WHERE `active` = '1' AND `postcodes` LIKE '%,".smallPostcode($postcode).",%' HAVING `distance` < '100' ORDER BY `distance` LIMIT ".$limit.";"));
+            if($cover === true){
+                $coverSQL = " AND `postcodes` LIKE '%,".smallPostcode($postcode).",%'";
+            }
+            return $this->listInstructors(self::$db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT {$limit};"));
         }
         return false;
     }
