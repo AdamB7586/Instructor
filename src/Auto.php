@@ -2,6 +2,8 @@
 
 namespace Instructor;
 
+Use GoogleMapsGeocoder;
+
 class Auto extends Instructor{
     /**
      * Get automatic instructors from the database
@@ -24,12 +26,13 @@ class Auto extends Instructor{
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true) {
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
+        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
             if($cover === true){
                 $coverSQL = " AND `postcodes` LIKE '%,".smallPostcode($postcode).",%'";
             }
-            return $this->listInstructors(self::$db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT ".$limit.";"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT ".$limit.";"));
         }
         return false;
     }

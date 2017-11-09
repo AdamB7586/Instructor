@@ -6,8 +6,7 @@ use DBAL\Database;
 Use GoogleMapsGeocoder;
 
 class Instructor {
-    
-    protected static $db;
+    protected $db;
     protected $status = array(0 => 'Pending', 1 => 'Active', 2 => 'Disabled', 3 => 'Suspended', 4 => 'Delisted');
     
     public $instructor_table = 'instructors';
@@ -15,12 +14,32 @@ class Instructor {
     
     public $display_testimonials = false;
     
+    protected $apiKey = false;
+    
     /**
      * Constructor
      * @param Database $db This should be an instance of the database class
      */
     public function __construct(Database $db) {
-        self::$db = $db;
+        $this->db = $db;
+    }
+    
+    /**
+     * Sets the API Key for the Google Geocoding Object
+     * @param string $key This should be your Google API Key
+     * @return $this
+     */
+    public function setAPIKey($key){
+        $this->apiKey = $key;
+        return $this;
+    }
+    
+    /**
+     * Gets the Google API key if set
+     * @return string|false If the API key is set it will be returned else will return false
+     */
+    public function getAPIKey(){
+        return $this->apiKey;
     }
     
     /**
@@ -38,7 +57,7 @@ class Instructor {
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllInstructors($active = 1){
-        return self::$db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('FINO' => 'DESC'));
+        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('FINO' => 'DESC'));
     }
     
     /**
@@ -47,7 +66,7 @@ class Instructor {
      * @return array|false This should be an array of the instructor information if the fino exists else will be false
      */
     public function getInstructorInfo($fino){
-        return self::$db->select($this->instructor_table, array('fino' => intval($fino)));
+        return $this->db->select($this->instructor_table, array('fino' => intval($fino)));
     }
     
     /**
@@ -65,7 +84,7 @@ class Instructor {
         if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return self::$db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password)/*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password)/*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
         }
         return false;
     }
@@ -80,7 +99,7 @@ class Instructor {
         if(empty(trim($information['about']))){$information['about'] = NULL;}
         if(empty(trim($information['offers']))){$information['offers'] = NULL;}
         if(empty(trim($information['notes']))){$information['notes'] = NULL;}
-        return self::$db->update($this->instructor_table, $information, array('fino' => $fino));
+        return $this->db->update($this->instructor_table, $information, array('fino' => $fino));
     }
     
     /**
@@ -93,7 +112,7 @@ class Instructor {
         foreach($information as $info => $value){
             if(empty(trim($value))){$information[$info] = NULL;}
         }
-        return self::$db->update($this->instructor_table, $information, array('fino' => $fino));
+        return $this->db->update($this->instructor_table, $information, array('fino' => $fino));
     }
     
     /**
@@ -104,9 +123,10 @@ class Instructor {
      */
     public function updateInstructorLocation($fino, $postcode){
         $maps = new GoogleMapsGeocoder($postcode.', UK');
+        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            return self::$db->update($this->instructor_table, array('lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()), array('fino' => $fino));
+            return $this->db->update($this->instructor_table, array('lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()), array('fino' => $fino));
         }
         return false;
     }
@@ -122,7 +142,7 @@ class Instructor {
         if($active === true){
             $where['active'] = 1;
         }
-        return $this->listInstructors(self::$db->selectAll($this->instructor_table, $where, '*', 'RAND()', $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', 'RAND()', $limit));
     }
     
     /**
@@ -134,12 +154,13 @@ class Instructor {
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true){
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
+        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
             if($cover === true){
                 $coverSQL = " AND `postcodes` LIKE '%,".smallPostcode($postcode).",%'";
             }
-            return $this->listInstructors(self::$db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT {$limit};"));
         }
         return false;
     }
