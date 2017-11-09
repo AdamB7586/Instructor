@@ -3,7 +3,7 @@
 namespace Instructor;
 
 use DBAL\Database;
-Use GoogleMapsGeocoder;
+use GoogleMapsGeocoder;
 
 class Instructor {
     protected $db;
@@ -157,10 +157,10 @@ class Instructor {
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            if($cover === true){
-                $coverSQL = " AND `postcodes` LIKE '%,".smallPostcode($postcode).",%'";
+            if($cover === true || preg_match('/([A-Z])\S\d?\d/g', $this->smallPostcode($postcode)) === true){
+                $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < 15 ORDER BY `distance` LIMIT {$limit};"));
         }
         return false;
     }
@@ -170,7 +170,7 @@ class Instructor {
      * @param array $instructors An array of the instructors results from the database so additional information can be retrieved and added
      * @return array|false If any instructors are returned their information will be returned else if none exists will return false
      */
-    private function listInstructors($instructors){
+    protected function listInstructors($instructors){
         if(is_array($instructors)){
             foreach($instructors as $i => $instructor){
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
@@ -200,7 +200,7 @@ class Instructor {
      * @param string $name The full name for the instructor
      * @return string Will return only the first name
      */
-    private function firstname($name){
+    protected function firstname($name){
         $names = explode(' ', $name);
         return $names[0];
     }
@@ -210,7 +210,28 @@ class Instructor {
      * @param string $postcodes The list of postcodes that the instructor covers
      * @return string A formated list will be returned to make it more easily readable
      */
-    private function instPostcodes($postcodes){
+    protected function instPostcodes($postcodes){
         return str_replace(',', ', ', substr($postcodes, 1, -1));
+    }
+    
+    /**
+     * Returns only the first part of a given postcode
+     * @param string $postcode This should be the give postcode to convert to the small postcode
+     * @param boolean $alpha If you only want the alpha characters and not any numeric set this to true
+     * @return string The small postcode will be returned
+     */
+    protected function smallPostcode($postcode, $alpha = false){
+        $pcode = str_replace(" ", "", $postcode);
+        $length = strlen($pcode);
+
+        if($length >= 5){
+            $smallpcode = substr($pcode, 0, $length - 3);
+        }
+        else{
+            $smallpcode = $pcode;
+        }
+        if($alpha !== false){$smallpcode = preg_replace('/[^A-Za-z_]/', '', $smallpcode);}
+
+        return strtoupper($smallpcode);	
     }
 }

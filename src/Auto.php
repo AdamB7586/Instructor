@@ -29,10 +29,10 @@ class Auto extends Instructor{
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            if($cover === true){
-                $coverSQL = " AND `postcodes` LIKE '%,".smallPostcode($postcode).",%'";
+            if($cover === true || preg_match('/([A-Z])\S\d?\d/g', $this->smallPostcode($postcode)) === true){
+                $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < 30 ORDER BY `distance` LIMIT ".$limit.";"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < 15 ORDER BY `distance` LIMIT ".$limit.";"));
         }
         return false;
     }
