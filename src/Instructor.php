@@ -157,7 +157,7 @@ class Instructor {
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            if($cover === true || preg_match('/([A-Z])\S\d?\d/g', $this->smallPostcode($postcode)) === true){
+            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true){
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
                 $distance = 100;
             }
@@ -225,7 +225,7 @@ class Instructor {
      * @return string The small postcode will be returned
      */
     protected function smallPostcode($postcode, $alpha = false){
-        $pcode = str_replace(" ", "", $postcode);
+        $pcode = $this->replaceIncorrectNumbers($postcode);
         $length = strlen($pcode);
 
         if($length >= 5){
@@ -237,5 +237,16 @@ class Instructor {
         if($alpha !== false){$smallpcode = preg_replace('/[^A-Za-z_]/', '', $smallpcode);}
 
         return strtoupper($smallpcode);	
+    }
+    
+    /**
+     * Replace special characters with the corresponding number on the keyboard
+     * @param string $string This should be the string where incorrect values will be replaced
+     * @return string The correctly formatted string will be returned
+     */
+    protected function replaceIncorrectNumbers($string){
+        $characters = array('!', '"', '£', '$', '%', '^', '&', '*', '(', ')', ' ');
+        $numbers = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '');
+        return str_replace($characters, $numbers, trim($string));
     }
 }

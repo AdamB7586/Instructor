@@ -29,7 +29,7 @@ class Auto extends Instructor{
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            if($cover === true || preg_match('/([A-Z])\S\d?\d/g', $this->smallPostcode($postcode)) === true){
+            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) !== false){
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
                 $distance = 100;
             }
