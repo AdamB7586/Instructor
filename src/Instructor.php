@@ -153,9 +153,10 @@ class Instructor {
      * @param string $postcode This should be the postcode that you wish to find the closest instructor to
      * @param int $limit The maximum number of instructors to display
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
+     * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructors($postcode, $limit = 50, $cover = true){
+    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false){
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
@@ -167,9 +168,20 @@ class Instructor {
             else{
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC, `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
         }
         return false;
+    }
+    
+    /**
+     * Find the closest instructors with those who have offers prioritised first
+     * @param string $postcode This should be the postcode that you wish to find the closest instructor to
+     * @param int $limit The maximum number of instructors to display
+     * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
+     * @return array|boolean If any instructors exist they will be returned as an array else will return false
+     */
+    public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true){
+        return $this->findClosestInstructors($postcode, $limit, $cover);
     }
     
     /**
@@ -185,6 +197,19 @@ class Instructor {
                 $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['fino']);
             }
             return $instructors;
+        }
+        return false;
+    }
+    
+    /**
+     * Add priority to a given instructor
+     * @param int $fino This should be the instructors unique franchise number
+     * @return boolean If the record is updated will return true else returns false
+     */
+    public function addPriority($fino){
+        if(is_numeric($fino)){
+            $date = new \DateTime();
+            return $this->db->update($this->instructor_table, array('priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')), array('fino' => intval($fino)));
         }
         return false;
     }
