@@ -12,6 +12,8 @@ class Instructor {
     public $instructor_table = 'instructors';
     public $testimonial_table = 'testimonials';
     
+    public $priority_period = '3 months';
+    
     public $display_testimonials = false;
     
     protected $apiKey = false;
@@ -22,6 +24,7 @@ class Instructor {
      */
     public function __construct(Database $db) {
         $this->db = $db;
+        $this->removePriorities();
     }
     
     /**
@@ -84,7 +87,7 @@ class Instructor {
         if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password)/*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password), /*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
         }
         return false;
     }
@@ -142,7 +145,7 @@ class Instructor {
         if($active === true){
             $where['active'] = 1;
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', 'RAND()', $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', array('priority' => 'DESC', 'RWAND()'), $limit));
     }
     
     /**
@@ -164,7 +167,7 @@ class Instructor {
             else{
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < {$distance} ORDER BY `distance` LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC, `distance` ASC LIMIT {$limit};"));
         }
         return false;
     }
@@ -184,6 +187,15 @@ class Instructor {
             return $instructors;
         }
         return false;
+    }
+
+    /**
+     * Remove anyone from the priority list who has been there for longer than the alloted period
+     */
+    public function removePriorities(){
+        $date = new \DateTime();
+        $date->modify("-{$this->priority_period}");
+        $this->db->update($this->instructor_table, array('priority' => 0, 'priority_start_date' => NULL), array('priority' => 1, 'priority_start_date' => array('<=', $date->format('Y-m-d H:i:s'))));
     }
     
     /**
