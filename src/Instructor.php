@@ -145,7 +145,7 @@ class Instructor {
         if($active === true){
             $where['active'] = 1;
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', array('priority' => 'DESC', 'RWAND()'), $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', array('priority' => 'DESC', 'RAND()'), $limit));
     }
     
     /**
