@@ -22,5 +22,8 @@
         "psr-4": {
             "Instructor\\Tests\\": "tests/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
     }
 }
