@@ -6,7 +6,7 @@
         "adamb/database": "^1.0",
         "adamb/google-maps-geocoder": "^4.2"
     },
-    "license": "None",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Adam Binnersley",
