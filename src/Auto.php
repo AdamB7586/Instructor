@@ -34,6 +34,7 @@ class Auto extends Instructor{
                 $distance = 100;
             }
             else{
+                $coverSQL = "";
                 $distance = 15;
             }
             return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY `distance` LIMIT ".$limit.";"));

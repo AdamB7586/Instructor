@@ -16,7 +16,7 @@ class Instructor {
     
     public $display_testimonials = false;
     
-    protected $apiKey = false;
+    protected $apiKey;
     
     /**
      * Constructor
@@ -42,7 +42,10 @@ class Instructor {
      * @return string|false If the API key is set it will be returned else will return false
      */
     public function getAPIKey(){
-        return $this->apiKey;
+        if(is_string($this->apiKey)){
+            return $this->apiKey;
+        }
+        return false;
     }
     
     /**
@@ -166,6 +169,7 @@ class Instructor {
                 $distance = 100;
             }
             else{
+                $coverSQL = "";
                 $distance = 15;
             }
             return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = '1'{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
