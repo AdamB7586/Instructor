@@ -15,8 +15,12 @@ class AutoTest extends TestCase{
         $this->auto = new Auto($this->db);
     }
     
-    protected function tearDown() {
+    public function tearDown() {
         $this->auto = null;
         $this->db = null;
+    }
+    
+    public function testExample(){
+        $this->markTestIncomplete();
     }
 }

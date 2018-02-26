@@ -15,8 +15,12 @@ class InstructorTest extends TestCase{
         $this->instructor = new Instructor($this->db);
     }
     
-    protected function tearDown() {
+    public function tearDown() {
         $this->instructor = null;
         $this->db = null;
+    }
+    
+    public function testExample(){
+        $this->markTestIncomplete();
     }
 }
