@@ -90,7 +90,7 @@ class Instructor {
         if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $password, 'hash' => md5($password), /*password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])*/), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => base64_encode($password), 'hash' => password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])), $additionalInfo));
         }
         return false;
     }
