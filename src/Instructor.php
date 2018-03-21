@@ -51,7 +51,7 @@ class Instructor {
     /**
      * Returns the status text for the given status number
      * @param int $status This should be the status number you wish to get the test for
-     * @return string This will be the status text
+     * @return string|false This will be the status text if key exists else will be false
      */
     public function instructorStatus($status){
         if(array_key_exists($status, $this->status)){
