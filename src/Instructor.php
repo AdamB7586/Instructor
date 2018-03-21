@@ -54,7 +54,10 @@ class Instructor {
      * @return string This will be the status text
      */
     public function instructorStatus($status){
-        return $this->status[intval($status)];
+        if(array_key_exists($status, $this->status)){
+            return $this->status[intval($status)];
+        }
+        return false;
     }
     
     /**
@@ -63,7 +66,7 @@ class Instructor {
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllInstructors($active = 1){
-        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('FINO' => 'DESC'));
+        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('fino' => 'DESC'));
     }
     
     /**
@@ -196,7 +199,7 @@ class Instructor {
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
     public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true){
-        return $this->findClosestInstructors($postcode, $limit, $cover);
+        return $this->findClosestInstructors($postcode, $limit, $cover, true);
     }
     
     /**
