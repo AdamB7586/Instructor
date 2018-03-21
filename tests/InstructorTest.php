@@ -86,7 +86,12 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::addInstructor
      */
     public function testAddInstructor(){
-        $this->markTestIncomplete();
+        $this->assertTrue($this->instructor->addInstructor(11, 'Steve Smith', 'test@test.com', 'https://www.steveswebsite.com', 'M', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',LS1,LS2,LS3,LS4,LS5,LS21,')));
+        $this->assertEquals('Steve Smith', $this->instructor->getInstructorInfo(11)['name']);
+        $this->assertFalse($this->instructor->addInstructor(11, 'Steve Smith', 'test@test.com', 'https://www.steveswebsite.com', 'M', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',LS1,LS2,LS3,LS4,LS5,LS21,')));
+        $this->assertFalse($this->instructor->addInstructor(12, 'Diane Turner', 'invalidemail.com', '', 'F', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',KT1,KT2,KT3,KT6,KT16,')));
+        $this->assertFalse($this->instructor->addInstructor(12, 'Diane Turner', 'test@email.com', '', 'F', 'mypassword#', 'not_an_array'));
+        
     }
     
     /**
