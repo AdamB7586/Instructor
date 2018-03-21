@@ -40,6 +40,17 @@ class Auto extends Instructor{
             }
             return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `distance` LIMIT ".$limit.";"));
         }
-        return false;
+        return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
+    }
+    
+    /**
+     * Returns a list of instructors covering a given postcode area
+     * @param string $postcode This should be the postcode area
+     * @param int $limit The maximum number of instructors to display
+     * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
+     * @return array|false If any instructors exist they will be returned as an array else will return false
+     */
+    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false){
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
 }
