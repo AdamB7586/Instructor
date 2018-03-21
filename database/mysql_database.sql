@@ -1,0 +1,26 @@
+DROP TABLE IF EXISTS `instructors`;
+CREATE TABLE IF NOT EXISTS `instructors` (
+  `fino` int(11) UNSIGNED NOT NULL,
+  `active` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
+  `name` varchar(100) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `website` varchar(180) DEFAULT NULL,
+  `gender` varchar(1) NOT NULL,
+  `postcodes` text NOT NULL,
+  `about` text,
+  `offers` text,
+  `lat` float(10,4) DEFAULT NULL,
+  `lng` float(10,4) DEFAULT NULL,
+  `offer` tinyint(1) UNSIGNED NOT NULL DEFAULT '1',
+  `manual` tinyint(1) UNSIGNED NOT NULL DEFAULT '1',
+  `automatic` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
+  `password` varchar(150) NOT NULL,
+  `hash` varchar(72) NOT NULL,
+  `priority` tinyint(3) UNSIGNED NOT NULL DEFAULT '1',
+  `priority_start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `notes` text,
+  PRIMARY KEY (`fino`),
+  KEY `active` (`active`),
+  KEY `automatic` (`automatic`),
+  KEY `manual` (`manual`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

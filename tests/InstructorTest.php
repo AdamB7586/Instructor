@@ -11,8 +11,17 @@ class InstructorTest extends TestCase{
     protected $db;
 
     public function setUp() {
-        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE'], '127.0.0.1', false, true, $GLOBALS['DRIVER']);
-        $this->instructor = new Instructor($this->db);
+        $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
+        if(!$this->db->isConnected()){
+            $this->markTestSkipped(
+                'No local database connection is available'
+            );
+        }
+        else{
+            $this->db->query(file_get_contents(dirname(dirname(__FILE__)).'/database/mysql_database.sql'));
+            $this->db->query(file_get_contents(dirname(__FILE__).'/sample_data/mysql_data.sql'));
+            $this->instructor = new Instructor($this->db);
+        }
     }
     
     public function tearDown() {
@@ -20,7 +29,125 @@ class InstructorTest extends TestCase{
         $this->db = null;
     }
     
-    public function testExample(){
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::setAPIKey
+     * @covers Instructor\Instructor::getAPIKey
+     */
+    public function testSetAPIKey(){
+        $this->assertFalse($this->instructor->getAPIKey());
+        $this->assertObjectHasAttribute('display_testimonials', $this->instructor->setAPIKey(1565785));
+        $this->assertFalse($this->instructor->getAPIKey());
+        $this->assertObjectHasAttribute('display_testimonials', $this->instructor->setAPIKey('my-api-key'));
+        $this->assertEquals('my-api-key', $this->instructor->getAPIKey());
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::instructorStatus
+     */
+    public function testGetStatus(){
+        $this->assertEquals('Active', $this->instructor->instructorStatus(1));
+        $this->assertEquals('Disabled', $this->instructor->instructorStatus(2));
+        $this->assertEquals('Delisted', $this->instructor->instructorStatus(4));
+        $this->assertFalse($this->instructor->instructorStatus(15546));
+        $this->assertFalse($this->instructor->instructorStatus('hello'));
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::getAllInstructors
+     */
+    public function testListInstructors(){
+        $this->assertArrayHasKey('fino', $this->instructor->getAllInstructors(1)[3]);
+        $this->assertGreaterThan(5, count($this->instructor->getAllInstructors(1)));
+        $this->assertEquals(1, count($this->instructor->getAllInstructors(2)));
+        $this->assertFalse($this->instructor->getAllInstructors(8));
+        $this->assertFalse($this->instructor->getAllInstructors('hello'));
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::getInstructorInfo
+     */
+    public function testGetInstructorInfo(){
+        $info = $this->instructor->getInstructorInfo(2);
+        $this->assertEquals('Helen Smith', $info['name']);
+        $this->assertArrayHasKey('postcodes', $info);
+        $person_two_info = $this->instructor->getInstructorInfo(6);
+        $this->assertEquals('Bob Clark', $person_two_info['name']);
+        $this->assertArrayHasKey('postcodes', $person_two_info);
+        $this->assertFalse($this->instructor->getInstructorInfo(5326));
+        $this->assertFalse($this->instructor->getInstructorInfo('string'));
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::addInstructor
+     */
+    public function testAddInstructor(){
+        $this->markTestIncomplete();
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::updateInstructor
+     * @covers Instructor\Instructor::updateInstructorPersonalInformation
+     */
+    public function testUpdateInstructor(){
+        $this->markTestIncomplete();
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::updateInstructorLocation
+     * @covers Instructor\Instructor::getAPIKey
+     */
+    public function testUpdateInstructorLocation(){
+        $this->markTestIncomplete();
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::getInstructors
+     * @covers Instructor\Instructor::listInstructors
+     * @covers Instructor\Instructor::instPostcodes
+     * @covers Instructor\Instructor::firstname
+     * @covers Instructor\Instructor::instTestimonials
+     * @covers Instructor\Instructor::findClosestInstructors
+     * @covers Instructor\Instructor::findInstructorsByPostcode
+     * @covers Instructor\Instructor::getAPIKey
+     * @covers Instructor\Instructor::smallPostcode
+     * @covers Instructor\Instructor::replaceIncorrectNumbers
+     */
+    public function testGetInstructors(){
+        $this->markTestIncomplete();
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::findClosestInstructorWithOffer
+     * @covers Instructor\Instructor::getInstructors
+     * @covers Instructor\Instructor::listInstructors
+     * @covers Instructor\Instructor::instPostcodes
+     * @covers Instructor\Instructor::firstname
+     * @covers Instructor\Instructor::instTestimonials
+     * @covers Instructor\Instructor::findClosestInstructors
+     * @covers Instructor\Instructor::findInstructorsByPostcode
+     * @covers Instructor\Instructor::getAPIKey
+     * @covers Instructor\Instructor::smallPostcode
+     * @covers Instructor\Instructor::replaceIncorrectNumbers
+     */
+    public function testGetInstructorsWithOffer(){
+        $this->markTestIncomplete();
+    }
+    
+    /**
+     * @covers Instructor\Instructor::__construct
+     * @covers Instructor\Instructor::addPriority
+     * @covers Instructor\Instructor::removePriorities
+     */
+    public function testPriority(){
         $this->markTestIncomplete();
     }
 }
