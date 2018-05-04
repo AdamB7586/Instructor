@@ -4,8 +4,9 @@ namespace Instructor;
 
 use DBAL\Database;
 use GoogleMapsGeocoder;
+use UserAuth\User;
 
-class Instructor {
+class Instructor extends User{
     protected $db;
     protected $status = array(0 => 'Pending', 1 => 'Active', 2 => 'Disabled', 3 => 'Suspended', 4 => 'Delisted');
     
@@ -23,7 +24,11 @@ class Instructor {
      * @param Database $db This should be an instance of the database class
      */
     public function __construct(Database $db) {
-        $this->db = $db;
+        parent::__construct($db);
+        $this->table_users = $this->instructor_table;
+        $this->table_attempts = $this->instructor_table.'_attempts';
+        $this->table_requests = $this->instructor_table.'_requests';
+        $this->table_sessions = $this->instructor_table.'_sessions';
         $this->removePriorities();
     }
     
@@ -93,7 +98,7 @@ class Instructor {
         if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => base64_encode($password), 'hash' => password_hash($password, PASSWORD_DEFAULT, ['cost' => 11])), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'password_base' => base64_encode($password)), $additionalInfo));
         }
         return false;
     }
