@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `instructors` (
   `priority_start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime DEFAULT NULL,
   `notes` text,
-  PRIMARY KEY (`fino`),
+  PRIMARY KEY (`id`),
   KEY `active` (`active`),
   KEY `automatic` (`automatic`),
   KEY `manual` (`manual`)
