@@ -71,21 +71,21 @@ class Instructor extends User{
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllInstructors($active = 1){
-        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('fino' => 'DESC'));
+        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('id' => 'DESC'));
     }
     
     /**
      * Returns the information for a individual driving instructor
-     * @param int $fino This should be the franchise number of the instructor
-     * @return array|false This should be an array of the instructor information if the fino exists else will be false
+     * @param int $id This should be the franchise number of the instructor
+     * @return array|false This should be an array of the instructor information if the id exists else will be false
      */
-    public function getInstructorInfo($fino){
-        return $this->db->select($this->instructor_table, array('fino' => intval($fino)));
+    public function getInstructorInfo($id){
+        return $this->db->select($this->instructor_table, array('id' => intval($id)));
     }
     
     /**
      * Add a new instructor to the database
-     * @param int $fino This should be the instructors unique franchise number
+     * @param int $id This should be the instructors unique franchise number
      * @param string $name The instructors name
      * @param string $email The email address to associate with the instructor
      * @param string $domain The website that this instructor has been assigned
@@ -94,53 +94,53 @@ class Instructor extends User{
      * @param array $additionalInfo Any additional information can be added to this as an array
      * @return boolean If the information has been successfully added will return true else will return false
      */
-    public function addInstructor($fino, $name, $email, $domain, $gender, $password, $additionalInfo = []){
-        if(!$this->getInstructorInfo($fino) && is_numeric($fino) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
+    public function addInstructor($id, $name, $email, $domain, $gender, $password, $additionalInfo = []){
+        if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('fino' => intval($fino), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'password_base' => base64_encode($password)), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'password_base' => base64_encode($password)), $additionalInfo));
         }
         return false;
     }
     
     /**
      * Updates instructor information
-     * @param int $fino This should be the franchise number of the instructor you are updating
+     * @param int $id This should be the franchise number of the instructor you are updating
      * @param array $information This should be an array of all of the information you are updating in the format or array('field' => 'value', 'fields2' => 2)
      * @return boolean If the information is successfully updated will return true else returns false
      */
-    public function updateInstructor($fino, $information = []){
+    public function updateInstructor($id, $information = []){
         if(empty(trim($information['about']))){$information['about'] = NULL;}
         if(empty(trim($information['offers']))){$information['offers'] = NULL;}
         if(empty(trim($information['notes']))){$information['notes'] = NULL;}
-        return $this->db->update($this->instructor_table, $information, array('fino' => $fino));
+        return $this->db->update($this->instructor_table, $information, array('id' => $id));
     }
     
     /**
      * Updates the instructors personal information in the database
-     * @param int $fino This should be franchise number for the instructor
+     * @param int $id This should be franchise number for the instructor
      * @param array $information This should be any information that you are updating in an array
      * @return boolean If the information is updated will return true else will return false
      */
-    public function updateInstructorPersonalInformation($fino, $information = []){
+    public function updateInstructorPersonalInformation($id, $information = []){
         foreach($information as $info => $value){
             if(empty(trim($value))){$information[$info] = NULL;}
         }
-        return $this->db->update($this->instructor_table, $information, array('fino' => $fino));
+        return $this->db->update($this->instructor_table, $information, array('id' => $id));
     }
     
     /**
      * Update the latitude and longitude where the instructor is located
-     * @param int $fino This should be the franchise number of the instructor you are updating
+     * @param int $id This should be the franchise number of the instructor you are updating
      * @param string $postcode This should be the postcode where the instructor is located
      * @return boolean If the information is updated will return true else returns false
      */
-    public function updateInstructorLocation($fino, $postcode){
+    public function updateInstructorLocation($id, $postcode){
         $maps = new GoogleMapsGeocoder($postcode.', UK');
         if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()){
-            return $this->db->update($this->instructor_table, array('lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()), array('fino' => $fino));
+            return $this->db->update($this->instructor_table, array('lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()), array('id' => $id));
         }
         return false;
     }
@@ -217,7 +217,7 @@ class Instructor extends User{
             foreach($instructors as $i => $instructor){
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
                 $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
-                $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['fino']);
+                $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['id']);
             }
             return $instructors;
         }
@@ -226,13 +226,13 @@ class Instructor extends User{
     
     /**
      * Add priority to a given instructor
-     * @param int $fino This should be the instructors unique franchise number
+     * @param int $id This should be the instructors unique franchise number
      * @return boolean If the record is updated will return true else returns false
      */
-    public function addPriority($fino){
-        if(is_numeric($fino)){
+    public function addPriority($id){
+        if(is_numeric($id)){
             $date = new \DateTime();
-            return $this->db->update($this->instructor_table, array('priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')), array('fino' => intval($fino)));
+            return $this->db->update($this->instructor_table, array('priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')), array('id' => intval($id)));
         }
         return false;
     }
@@ -248,13 +248,13 @@ class Instructor extends User{
     
     /**
      * Return any instructor testimonials in a random order
-     * @param int $fino This should be the instructors unique franchise number
+     * @param int $id This should be the instructors unique franchise number
      * @param int $limit The maximum number of testimonials to show
      * @return array|false If any testimonials exist they will be returned as an array else will return false
      */
-    public function instTestimonials($fino, $limit = 5){
+    public function instTestimonials($id, $limit = 5){
         if($this->display_testimonials === true){
-            return $this->db->selectAll($this->testimonial_table, array('fino' => intval($fino)), '*', 'RAND()', intval($limit));
+            return $this->db->selectAll($this->testimonial_table, array('id' => intval($id)), '*', 'RAND()', intval($limit));
         }
         return false;
     }

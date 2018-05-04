@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS `instructors`;
 CREATE TABLE IF NOT EXISTS `instructors` (
-  `fino` int(11) UNSIGNED NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `active` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `name` varchar(100) NOT NULL,
   `email` varchar(150) DEFAULT NULL,
@@ -16,8 +16,10 @@ CREATE TABLE IF NOT EXISTS `instructors` (
   `automatic` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `password` varchar(72) NOT NULL,
   `hash` varchar(150) NOT NULL,
+  `isactive` tinyint(1) NOT NULL DEFAULT '1',
   `priority` tinyint(3) UNSIGNED NOT NULL DEFAULT '1',
   `priority_start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_login` datetime DEFAULT NULL,
   `notes` text,
   PRIMARY KEY (`fino`),
   KEY `active` (`active`),
