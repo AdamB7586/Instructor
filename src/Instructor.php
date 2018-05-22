@@ -98,7 +98,7 @@ class Instructor extends User{
         if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
             if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
             if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'password_base' => base64_encode($password)), $additionalInfo));
+            return $this->db->insert($this->instructor_table, array_merge(array('id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)), $additionalInfo));
         }
         return false;
     }

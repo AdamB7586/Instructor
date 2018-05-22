@@ -59,7 +59,7 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::getAllInstructors
      */
     public function testListInstructors(){
-        $this->assertArrayHasKey('fino', $this->instructor->getAllInstructors(1)[3]);
+        $this->assertArrayHasKey('id', $this->instructor->getAllInstructors(1)[3]);
         $this->assertGreaterThan(5, count($this->instructor->getAllInstructors(1)));
         $this->assertEquals(1, count($this->instructor->getAllInstructors(2)));
         $this->assertFalse($this->instructor->getAllInstructors(8));

@@ -1,4 +1,4 @@
-INSERT INTO `instructors` (`fino`, `active`, `name`, `email`, `website`, `gender`, `postcodes`, `about`, `offers`, `lat`, `lng`, `offer`, `manual`, `automatic`, `password`, `hash`, `priority`, `priority_start_date`, `notes`) VALUES
+INSERT INTO `instructors` (`id`, `active`, `name`, `email`, `website`, `gender`, `postcodes`, `about`, `offers`, `lat`, `lng`, `offer`, `manual`, `automatic`, `password`, `hash`, `priority`, `priority_start_date`, `notes`) VALUES
 (1, 1, 'Test User', NULL, NULL, 'M', ',LN1,LN2,LN3,LN4,LN5,', NULL, NULL, 53.6940, -1.3221, 1, 1, 0, '', '', 1, '2018-03-09 15:52:46', NULL),
 (2, 1, 'Helen Smith', NULL, NULL, 'M', ',WF7,WF8,WF6,', NULL, NULL, 52.1235, -1.5623, 1, 1, 0, '', '', 1, '2018-03-09 15:52:46', NULL),
 (3, 1, 'Bob Morton', NULL, NULL, 'M', ',FY1,FY2,FY3,FY4,FY5,FY6,FY7,FY8,', NULL, NULL, 53.7042, -1.2377, 1, 1, 0, '', '', 1, '2018-03-09 15:52:46', NULL),
