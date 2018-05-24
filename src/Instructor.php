@@ -8,7 +8,7 @@ use UserAuth\User;
 
 class Instructor extends User{
     protected $db;
-    protected $status = array(0 => 'Pending', 1 => 'Active', 2 => 'Disabled', 3 => 'Suspended', 4 => 'Delisted');
+    protected $status = array(2 => 'Pending', 1 => 'Active', 0 => 'Disabled', -1 => 'Suspended', 3 => 'Delisted');
     
     public $instructor_table = 'instructors';
     public $testimonial_table = 'testimonials';
@@ -71,7 +71,7 @@ class Instructor extends User{
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllInstructors($active = 1){
-        return $this->db->selectAll($this->instructor_table, array('active' => intval($active)), '*', array('id' => 'DESC'));
+        return $this->db->selectAll($this->instructor_table, array('isactive' => intval($active)), '*', array('id' => 'DESC'));
     }
     
     /**
@@ -154,7 +154,7 @@ class Instructor extends User{
      */
     public function getInstructors($where, $limit = 50, $active = true){
         if($active === true){
-            $where['active'] = 1;
+            $where['isactive'] = array('>=', 1);
         }
         return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', array('priority' => 'DESC', 'RAND()'), $limit));
     }
@@ -180,7 +180,7 @@ class Instructor extends User{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -193,7 +193,7 @@ class Instructor extends User{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false){
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `active` = 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
     
     /**

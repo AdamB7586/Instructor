@@ -38,7 +38,7 @@ class Auto extends Instructor{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `distance` LIMIT ".$limit.";"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `distance` LIMIT ".$limit.";"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -51,6 +51,6 @@ class Auto extends Instructor{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false){
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `active` = 1 AND `automatic` = 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `automatic` = 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
 }
