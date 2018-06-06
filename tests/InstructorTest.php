@@ -48,8 +48,8 @@ class InstructorTest extends TestCase{
      */
     public function testGetStatus(){
         $this->assertEquals('Active', $this->instructor->instructorStatus(1));
-        $this->assertEquals('Disabled', $this->instructor->instructorStatus(2));
-        $this->assertEquals('Delisted', $this->instructor->instructorStatus(4));
+        $this->assertEquals('Disabled', $this->instructor->instructorStatus(0));
+        $this->assertEquals('Delisted', $this->instructor->instructorStatus(3));
         $this->assertFalse($this->instructor->instructorStatus(15546));
         $this->assertFalse($this->instructor->instructorStatus('hello'));
     }

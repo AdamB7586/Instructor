@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `instructors` (
   `password` varchar(72) NOT NULL,
   `hash` varchar(150) NOT NULL,
   `isactive` tinyint(1) NOT NULL DEFAULT '1',
+  `delcache` tinyint(1) NOT NULL DEFAULT '1',
   `priority` tinyint(3) UNSIGNED NOT NULL DEFAULT '1',
   `priority_start_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime DEFAULT NULL,

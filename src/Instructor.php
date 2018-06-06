@@ -8,7 +8,7 @@ use UserAuth\User;
 
 class Instructor extends User{
     protected $db;
-    protected $status = array(2 => 'Pending', 1 => 'Active', 0 => 'Disabled', -1 => 'Suspended', 3 => 'Delisted');
+    protected $status = [2 => 'Pending', 1 => 'Active', 0 => 'Disabled', -1 => 'Suspended', 3 => 'Delisted'];
     
     public $instructor_table = 'instructors';
     public $testimonial_table = 'testimonials';
@@ -37,7 +37,7 @@ class Instructor extends User{
      * @param string $key This should be your Google API Key
      * @return $this
      */
-    public function setAPIKey($key){
+    public function setAPIKey($key) {
         $this->apiKey = $key;
         return $this;
     }
@@ -46,8 +46,8 @@ class Instructor extends User{
      * Gets the Google API key if set
      * @return string|false If the API key is set it will be returned else will return false
      */
-    public function getAPIKey(){
-        if(is_string($this->apiKey)){
+    public function getAPIKey() {
+        if(is_string($this->apiKey)) {
             return $this->apiKey;
         }
         return false;
@@ -58,8 +58,8 @@ class Instructor extends User{
      * @param int $status This should be the status number you wish to get the test for
      * @return string|false This will be the status text if key exists else will be false
      */
-    public function instructorStatus($status){
-        if(array_key_exists($status, $this->status)){
+    public function instructorStatus($status) {
+        if(array_key_exists($status, $this->status)) {
             return $this->status[intval($status)];
         }
         return false;
@@ -67,11 +67,11 @@ class Instructor extends User{
     
     /**
      * Get a list of all of the instructors 
-     * @param inst $active If set to a number should be the active value else should be set to false for all instructors
+     * @param int $active If set to a number should be the active value else should be set to false for all instructors
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
-    public function getAllInstructors($active = 1){
-        return $this->db->selectAll($this->instructor_table, array('isactive' => intval($active)), '*', array('id' => 'DESC'));
+    public function getAllInstructors($active = 1) {
+        return $this->db->selectAll($this->instructor_table, ['isactive' => $active], '*', ['id' => 'DESC']);
     }
     
     /**
@@ -79,8 +79,8 @@ class Instructor extends User{
      * @param int $id This should be the franchise number of the instructor
      * @return array|false This should be an array of the instructor information if the id exists else will be false
      */
-    public function getInstructorInfo($id){
-        return $this->db->select($this->instructor_table, array('id' => intval($id)));
+    public function getInstructorInfo($id) {
+        return $this->db->select($this->instructor_table, ['id' => intval($id)]);
     }
     
     /**
@@ -94,11 +94,11 @@ class Instructor extends User{
      * @param array $additionalInfo Any additional information can be added to this as an array
      * @return boolean If the information has been successfully added will return true else will return false
      */
-    public function addInstructor($id, $name, $email, $domain, $gender, $password, $additionalInfo = []){
-        if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)){
-            if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))){$additionalInfo['about'] = NULL;}
-            if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))){$additionalInfo['offers'] = NULL;}
-            return $this->db->insert($this->instructor_table, array_merge(array('id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)), $additionalInfo));
+    public function addInstructor($id, $name, $email, $domain, $gender, $password, $additionalInfo = []) {
+        if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))) {$additionalInfo['about'] = NULL;}
+            if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))) {$additionalInfo['offers'] = NULL;}
+            return $this->db->insert($this->instructor_table, array_merge(['id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)], $additionalInfo));
         }
         return false;
     }
@@ -109,11 +109,11 @@ class Instructor extends User{
      * @param array $information This should be an array of all of the information you are updating in the format or array('field' => 'value', 'fields2' => 2)
      * @return boolean If the information is successfully updated will return true else returns false
      */
-    public function updateInstructor($id, $information = []){
-        if(empty(trim($information['about']))){$information['about'] = NULL;}
-        if(empty(trim($information['offers']))){$information['offers'] = NULL;}
-        if(empty(trim($information['notes']))){$information['notes'] = NULL;}
-        return $this->db->update($this->instructor_table, $information, array('id' => $id));
+    public function updateInstructor($id, $information = []) {
+        if(empty(trim($information['about']))) {$information['about'] = NULL;}
+        if(empty(trim($information['offers']))) {$information['offers'] = NULL;}
+        if(empty(trim($information['notes']))) {$information['notes'] = NULL;}
+        return $this->db->update($this->instructor_table, $information, ['id' => $id]);
     }
     
     /**
@@ -122,11 +122,11 @@ class Instructor extends User{
      * @param array $information This should be any information that you are updating in an array
      * @return boolean If the information is updated will return true else will return false
      */
-    public function updateInstructorPersonalInformation($id, $information = []){
-        foreach($information as $info => $value){
-            if(empty(trim($value))){$information[$info] = NULL;}
+    public function updateInstructorPersonalInformation($id, $information = []) {
+        foreach($information as $info => $value) {
+            if(empty(trim($value))) {$information[$info] = NULL;}
         }
-        return $this->db->update($this->instructor_table, $information, array('id' => $id));
+        return $this->db->update($this->instructor_table, $information, ['id' => $id]);
     }
     
     /**
@@ -135,12 +135,12 @@ class Instructor extends User{
      * @param string $postcode This should be the postcode where the instructor is located
      * @return boolean If the information is updated will return true else returns false
      */
-    public function updateInstructorLocation($id, $postcode){
+    public function updateInstructorLocation($id, $postcode) {
         $maps = new GoogleMapsGeocoder($postcode.', UK');
-        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
+        if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
-        if($maps->getLatitude()){
-            return $this->db->update($this->instructor_table, array('lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()), array('id' => $id));
+        if($maps->getLatitude()) {
+            return $this->db->update($this->instructor_table, ['lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()], ['id' => $id]);
         }
         return false;
     }
@@ -152,11 +152,11 @@ class Instructor extends User{
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
      * @return array|false Will return a list of instructors if any match the criteria else will return false
      */
-    public function getInstructors($where, $limit = 50, $active = true){
-        if($active === true){
-            $where['isactive'] = array('>=', 1);
+    public function getInstructors($where, $limit = 50, $active = true) {
+        if($active === true) {
+            $where['isactive'] = ['>=', 1];
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', array('priority' => 'DESC', 'RAND()'), $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', ['priority' => 'DESC', 'RAND()'], $limit));
     }
     
     /**
@@ -167,12 +167,12 @@ class Instructor extends User{
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false){
+    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false) {
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
-        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
+        if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
-        if($maps->getLatitude()){
-            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true){
+        if($maps->getLatitude()) {
+            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
                 $distance = 100;
             }
@@ -192,7 +192,7 @@ class Instructor extends User{
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false){
+    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
         return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
     
@@ -203,7 +203,7 @@ class Instructor extends User{
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true){
+    public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true) {
         return $this->findClosestInstructors($postcode, $limit, $cover, true);
     }
     
@@ -212,9 +212,9 @@ class Instructor extends User{
      * @param array $instructors An array of the instructors results from the database so additional information can be retrieved and added
      * @return array|false If any instructors are returned their information will be returned else if none exists will return false
      */
-    protected function listInstructors($instructors){
-        if(is_array($instructors)){
-            foreach($instructors as $i => $instructor){
+    protected function listInstructors($instructors) {
+        if(is_array($instructors)) {
+            foreach($instructors as $i => $instructor) {
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
                 $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
                 $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['id']);
@@ -229,10 +229,10 @@ class Instructor extends User{
      * @param int $id This should be the instructors unique franchise number
      * @return boolean If the record is updated will return true else returns false
      */
-    public function addPriority($id){
-        if(is_numeric($id)){
+    public function addPriority($id) {
+        if(is_numeric($id)) {
             $date = new \DateTime();
-            return $this->db->update($this->instructor_table, array('priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')), array('id' => intval($id)));
+            return $this->db->update($this->instructor_table, ['priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')], ['id' => intval($id)]);
         }
         return false;
     }
@@ -240,10 +240,10 @@ class Instructor extends User{
     /**
      * Remove anyone from the priority list who has been there for longer than the alloted period
      */
-    public function removePriorities(){
+    public function removePriorities() {
         $date = new \DateTime();
         $date->modify("-{$this->priority_period}");
-        $this->db->update($this->instructor_table, array('priority' => 0, 'priority_start_date' => NULL), array('priority' => 1, 'priority_start_date' => array('<=', $date->format('Y-m-d H:i:s'))));
+        $this->db->update($this->instructor_table, ['priority' => 0, 'priority_start_date' => NULL], ['priority' => 1, 'priority_start_date' => ['<=', $date->format('Y-m-d H:i:s')]]);
     }
     
     /**
@@ -252,11 +252,19 @@ class Instructor extends User{
      * @param int $limit The maximum number of testimonials to show
      * @return array|false If any testimonials exist they will be returned as an array else will return false
      */
-    public function instTestimonials($id, $limit = 5){
-        if($this->display_testimonials === true){
-            return $this->db->selectAll($this->testimonial_table, array('id' => intval($id)), '*', 'RAND()', intval($limit));
+    public function instTestimonials($id, $limit = 5) {
+        if($this->display_testimonials === true) {
+            return $this->db->selectAll($this->testimonial_table, ['id' => intval($id)], '*', 'RAND()', intval($limit));
         }
         return false;
+    }
+    
+    public function deleteCache($id = false) {
+        $where = [];
+        if(in_numeric($id)){
+            $where = ['id' => $id];
+        }
+        return $this->db->update($this->instructor_table, ['delcache' => 1], $where);
     }
     
     /**
@@ -264,7 +272,7 @@ class Instructor extends User{
      * @param string $name The full name for the instructor
      * @return string Will return only the first name
      */
-    protected function firstname($name){
+    protected function firstname($name) {
         $names = explode(' ', $name);
         return $names[0];
     }
@@ -274,7 +282,7 @@ class Instructor extends User{
      * @param string $postcodes The list of postcodes that the instructor covers
      * @return string A formated list will be returned to make it more easily readable
      */
-    protected function instPostcodes($postcodes){
+    protected function instPostcodes($postcodes) {
         return str_replace(',', ', ', substr($postcodes, 1, -1));
     }
     
@@ -284,17 +292,17 @@ class Instructor extends User{
      * @param boolean $alpha If you only want the alpha characters and not any numeric set this to true
      * @return string The small postcode will be returned
      */
-    protected function smallPostcode($postcode, $alpha = false){
+    protected function smallPostcode($postcode, $alpha = false) {
         $pcode = $this->replaceIncorrectNumbers($postcode);
         $length = strlen($pcode);
 
-        if($length >= 5){
+        if($length >= 5) {
             $smallpcode = substr($pcode, 0, $length - 3);
         }
         else{
             $smallpcode = $pcode;
         }
-        if($alpha !== false){$smallpcode = preg_replace('/[^A-Za-z_]/', '', $smallpcode);}
+        if($alpha !== false) {$smallpcode = preg_replace('/[^A-Za-z_]/', '', $smallpcode);}
 
         return strtoupper($smallpcode);	
     }
@@ -304,9 +312,9 @@ class Instructor extends User{
      * @param string $string This should be the string where incorrect values will be replaced
      * @return string The correctly formatted string will be returned
      */
-    protected function replaceIncorrectNumbers($string){
-        $characters = array('!', '"', '£', '$', '%', '^', '&', '*', '(', ')', ' ');
-        $numbers = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '');
+    protected function replaceIncorrectNumbers($string) {
+        $characters = ['!', '"', '£', '$', '%', '^', '&', '*', '(', ')', ' '];
+        $numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ''];
         return str_replace($characters, $numbers, trim($string));
     }
 }
