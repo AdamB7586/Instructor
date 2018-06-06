@@ -261,7 +261,7 @@ class Instructor extends User{
     
     public function deleteCache($id = false) {
         $where = [];
-        if(in_numeric($id)){
+        if(is_numeric($id)){
             $where = ['id' => $id];
         }
         return $this->db->update($this->instructor_table, ['delcache' => 1], $where);
