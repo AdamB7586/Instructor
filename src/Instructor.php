@@ -96,6 +96,7 @@ class Instructor extends User{
      */
     public function addInstructor($id, $name, $email, $domain, $gender, $password, $additionalInfo = []) {
         if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $additionalInfo['postcodes'] = ','.trim(str_replace([' ', '.'], ['', ','], $additionalInfo['postcodes']), ',').',';
             if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))) {$additionalInfo['about'] = NULL;}
             if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))) {$additionalInfo['offers'] = NULL;}
             return $this->db->insert($this->instructor_table, array_merge(['id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)], $additionalInfo));
@@ -283,7 +284,7 @@ class Instructor extends User{
      * @return string A formated list will be returned to make it more easily readable
      */
     protected function instPostcodes($postcodes) {
-        return str_replace(',', ', ', substr($postcodes, 1, -1));
+        return str_replace(',', ', ', trim($postcodes, ','));
     }
     
     /**
