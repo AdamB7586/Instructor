@@ -10,11 +10,12 @@ class Auto extends Instructor{
      * @param array $where This should be the queries that need to be matched
      * @param int $limit The maximum number of instructors to display
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
+     * @param array|false Order the instructors by a given field and direction as array value or set to false
      * @return array|false Returns all of the instructors which match the criteria given if any exists else if no instructors exist will return false
      */
-    public function getInstructors($where, $limit = 50, $active = true) {
+    public function getInstructors($where, $limit = 50, $active = true, $order = false) {
         $where['automatic'] = 1;
-        return parent::getInstructors($where, $limit, $active);
+        return parent::getInstructors($where, $limit, $active, $order);
     }
     
     /**

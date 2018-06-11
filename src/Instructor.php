@@ -153,11 +153,11 @@ class Instructor extends User{
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
      * @return array|false Will return a list of instructors if any match the criteria else will return false
      */
-    public function getInstructors($where, $limit = 50, $active = true) {
+    public function getInstructors($where, $limit = 50, $active = true, $order = false) {
         if($active === true) {
             $where['isactive'] = ['>=', 1];
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', ['priority' => 'DESC', 'RAND()'], $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
     }
     
     /**
