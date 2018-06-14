@@ -23,8 +23,8 @@ class Instructor extends User{
      * Constructor
      * @param Database $db This should be an instance of the database class
      */
-    public function __construct(Database $db) {
-        parent::__construct($db);
+    public function __construct(Database $db, $language = "en_GB") {
+        parent::__construct($db, $language);
         $this->table_users = $this->instructor_table;
         $this->table_attempts = $this->instructor_table.'_attempts';
         $this->table_requests = $this->instructor_table.'_requests';
