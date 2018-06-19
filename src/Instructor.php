@@ -225,6 +225,8 @@ class Instructor extends User{
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
                 $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
                 $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['id']);
+                unset($instructors[$i]['password']);
+                unset($instructors[$i]['hash']);
             }
             return $instructors;
         }
