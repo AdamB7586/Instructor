@@ -2,6 +2,8 @@
 
 namespace Instructor;
 
+use GoogleMapsGeocoder;
+
 class Tutor extends Instructor {
     
     
