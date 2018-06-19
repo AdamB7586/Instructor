@@ -39,7 +39,7 @@ class Tutor extends Instructor {
     }
     
     /**
-     * Find the closest instructors to the given postcode
+     * Find the closest tutors to the given postcode
      * @param string $postcode This should be the postcode that you wish to find the closest instructor to
      * @param int $limit The maximum number of instructors to display
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
@@ -65,7 +65,7 @@ class Tutor extends Instructor {
     }
 
     /**
-     * Returns a list of instructors covering a given postcode area
+     * Returns a list of tutors covering a given postcode area
      * @param string $postcode This should be the postcode area
      * @param int $limit The maximum number of instructors to display
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
