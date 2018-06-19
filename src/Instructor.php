@@ -222,6 +222,9 @@ class Instructor extends User{
     protected function listInstructors($instructors) {
         if(is_array($instructors)) {
             foreach($instructors as $i => $instructor) {
+                $instructors[$i]['offers'] = unserialize($instructor['offers']);
+                $instructors[$i]['lessons'] = unserialize($instructor['lessons']);
+                $instructors[$i]['social'] = unserialize($instructor['social']);
                 $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
                 $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
                 $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['id']);
