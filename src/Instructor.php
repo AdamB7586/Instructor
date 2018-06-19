@@ -80,7 +80,13 @@ class Instructor extends User{
      * @return array|false This should be an array of the instructor information if the id exists else will be false
      */
     public function getInstructorInfo($id) {
-        return $this->db->select($this->instructor_table, ['id' => intval($id)]);
+        $instInfo = $this->db->select($this->instructor_table, ['id' => intval($id)]);
+        if(is_array($instInfo)){
+            $instInfo['offers'] = unserialize($instInfo['offers']);
+            $instInfo['lessons'] = unserialize($instInfo['lessons']);
+            $instInfo['social'] = unserialize($instInfo['social']);
+        }
+        return $instInfo;
     }
     
     /**
