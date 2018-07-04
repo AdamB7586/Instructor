@@ -204,6 +204,25 @@ class Instructor extends User{
     }
     
     /**
+     * Returns a list of instructors covering a given postcode area array
+     * @param array $postcodes This should be the postcode areas as an array
+     * @param int $limit The maximum number of instructors to display
+     * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
+     * @return array|false If any instructors exist they will be returned as an array else will return false
+     */
+    public function findInstructorsByPostcodeArray($postcodes, $limit = 50, $hasOffer = false){
+        if(is_array($postcodes)){
+            $sql = [];
+            foreach(array_filter($postcodes) as $postcode){
+                $sql[] = "`postcodes` LIKE ?";
+                $values[] = '%,'.$postcode.',%';
+            }
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
+        }
+        return false;
+    }
+    
+    /**
      * Find the closest instructors with those who have offers prioritised first
      * @param string $postcode This should be the postcode that you wish to find the closest instructor to
      * @param int $limit The maximum number of instructors to display
