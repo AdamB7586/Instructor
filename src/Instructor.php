@@ -5,6 +5,7 @@ namespace Instructor;
 use DBAL\Database;
 use GoogleMapsGeocoder;
 use UserAuth\User;
+use Instructor\Modifiers\Modifier;
 
 class Instructor extends User{
     protected $db;
@@ -103,8 +104,8 @@ class Instructor extends User{
     public function addInstructor($id, $name, $email, $domain, $gender, $password, $additionalInfo = []) {
         if(!$this->getInstructorInfo($id) && is_numeric($id) && is_array($additionalInfo) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $additionalInfo['postcodes'] = ','.trim(str_replace([' ', '.'], ['', ','], $additionalInfo['postcodes']), ',').',';
-            if(isset($additionalInfo['about']) && empty(trim($additionalInfo['about']))) {$additionalInfo['about'] = NULL;}
-            if(isset($additionalInfo['offers']) && empty(trim($additionalInfo['offers']))) {$additionalInfo['offers'] = NULL;}
+            $additionalInfo['about'] = Modifier::setNullOnEmpty($additionalInfo['about']);
+            $additionalInfo['offers'] = Modifier::setNullOnEmpty($additionalInfo['offers']);
             return $this->db->insert($this->instructor_table, array_merge(['id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)], $additionalInfo));
         }
         return false;
@@ -117,9 +118,9 @@ class Instructor extends User{
      * @return boolean If the information is successfully updated will return true else returns false
      */
     public function updateInstructor($id, $information = []) {
-        if(empty(trim($information['about']))) {$information['about'] = NULL;}
-        if(empty(trim($information['offers']))) {$information['offers'] = NULL;}
-        if(empty(trim($information['notes']))) {$information['notes'] = NULL;}
+        $information['about'] = Modifier::setNullOnEmpty($information['about']);
+        $information['offers'] = Modifier::setNullOnEmpty($information['offers']);
+        $information['notes'] = Modifier::setNullOnEmpty($information['notes']);
         return $this->db->update($this->instructor_table, $information, ['id' => $id]);
     }
     
@@ -131,7 +132,7 @@ class Instructor extends User{
      */
     public function updateInstructorPersonalInformation($id, $information = []) {
         foreach($information as $info => $value) {
-            if(empty(trim($value))) {$information[$info] = NULL;}
+            $information[$info] = Modifier::setNullOnEmpty($information[$info]);
         }
         return $this->db->update($this->instructor_table, $information, ['id' => $id]);
     }
