@@ -65,6 +65,7 @@ class Auto extends Instructor{
     public function findInstructorsByPostcodeArray($postcodes, $limit = 50, $hasOffer = false){
         if(is_array($postcodes)){
             $sql = [];
+            $values = [];
             foreach(array_filter($postcodes) as $postcode){
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
