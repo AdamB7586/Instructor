@@ -2,8 +2,6 @@
 
 namespace Instructor;
 
-use GoogleMapsGeocoder;
-
 class Tutor extends Instructor {
     
     
@@ -32,7 +30,7 @@ class Tutor extends Instructor {
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
      * @return array|false Will return a list of instructors if any match the criteria else will return false
      */
-    public function getTutors($where, $limit = 50, $active = true, $order = false) {
+    public function getTutors($where, $limit = 100, $active = true, $order = false) {
         $where['tutor'] = 1;
         if($active === true) {
             $where['isactive'] = ['>=', 1];
@@ -48,22 +46,9 @@ class Tutor extends Instructor {
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestTutors($postcode, $limit = 50, $cover = true, $hasOffer = false) {
-        $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
-        if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
-        $maps->geocode();
-        if($maps->getLatitude()) {
-            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
-                $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
-                $distance = 100;
-            }
-            else{
-                $coverSQL = "";
-                $distance = 15;
-            }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `tutor` = 1 AND `isactive` >= 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
-        }
-        return $this->findTutorsByPostcode($postcode, $limit, $hasOffer);
+    public function findClosestTutors($postcode, $limit = 100, $cover = true, $hasOffer = false) {
+        $this->querySQL = " AND `tutor` = 1";
+        return parent::findClosestInstructors($postcode, $limit, $cover, $hasOffer);
     }
 
     /**
@@ -73,7 +58,8 @@ class Tutor extends Instructor {
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findTutorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `tutor` = 1 AND `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+    public function findTutorsByPostcode($postcode, $limit = 100, $hasOffer = false) {
+        $this->querySQL = " AND `tutor` = 1";
+        return parent::findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Instructor;
 
-Use GoogleMapsGeocoder;
-
 class Auto extends Instructor{
     /**
      * Get automatic instructors from the database
@@ -27,21 +25,8 @@ class Auto extends Instructor{
      * @return array|false If any instructors cover the area will return an array of their details else will return false 
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false) {
-        $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
-        if($this->getAPIKey() !== false){$maps->setApiKey($this->getAPIKey());}
-        $maps->geocode();
-        if($maps->getLatitude()){
-            if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) !== false){
-                $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
-                $distance = 100;
-            }
-            else{
-                $coverSQL = "";
-                $distance = 15;
-            }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `automatic` = 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `distance` LIMIT ".$limit.";"));
-        }
-        return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
+        $this->querySQL = " AND `automatic` = 1";
+        return parent::findClosestInstructors($postcode, $limit, $cover, $hasOffer);
     }
     
     /**
@@ -52,7 +37,8 @@ class Auto extends Instructor{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false){
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `automatic` = 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        $this->querySQL = " AND `automatic` = 1";
+        return parent::findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
     
     /**
@@ -63,15 +49,7 @@ class Auto extends Instructor{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcodeArray($postcodes, $limit = 50, $hasOffer = false){
-        if(is_array($postcodes)){
-            $sql = [];
-            $values = [];
-            foreach(array_filter($postcodes) as $postcode){
-                $sql[] = "`postcodes` LIKE ?";
-                $values[] = '%,'.$postcode.',%';
-            }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `automatic` = 1 AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
-        }
-        return false;
+        $this->querySQL = " AND `automatic` = 1";
+        return parent::findInstructorsByPostcodeArray($postcodes, $limit, $hasOffer);
     }
 }

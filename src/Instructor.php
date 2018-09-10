@@ -20,6 +20,8 @@ class Instructor extends User{
     
     protected $apiKey;
     
+    protected $querySQL = '';
+    
     /**
      * Constructor
      * @param Database $db This should be an instance of the database class
@@ -188,7 +190,7 @@ class Instructor extends User{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -201,7 +203,7 @@ class Instructor extends User{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%' ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
     
     /**
@@ -219,7 +221,7 @@ class Instructor extends User{
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
         }
         return false;
     }
