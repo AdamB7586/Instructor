@@ -48,7 +48,7 @@ class Tutor extends Instructor {
      */
     public function findClosestTutors($postcode, $limit = 100, $cover = true, $hasOffer = false) {
         $this->querySQL = " AND `tutor` = 1";
-        return parent::findClosestInstructors($postcode, $limit, $cover, $hasOffer);
+        return $this->findClosestInstructors($postcode, $limit, $cover, $hasOffer);
     }
 
     /**
@@ -60,6 +60,6 @@ class Tutor extends Instructor {
      */
     public function findTutorsByPostcode($postcode, $limit = 100, $hasOffer = false) {
         $this->querySQL = " AND `tutor` = 1";
-        return parent::findInstructorsByPostcode($postcode, $limit, $hasOffer);
+        return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
 }
