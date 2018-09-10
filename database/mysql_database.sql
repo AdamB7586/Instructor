@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `instructors` (
   `postcodes` text NOT NULL,
   `about` text,
   `offers` text,
+  `lessons` text,
   `lat` float(10,4) DEFAULT NULL,
   `lng` float(10,4) DEFAULT NULL,
   `offer` tinyint(1) UNSIGNED NOT NULL DEFAULT '1',
