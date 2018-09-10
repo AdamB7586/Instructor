@@ -6,6 +6,9 @@
          beStrictAboutCoversAnnotation="false"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTodoAnnotatedTests="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="false"
+         convertWarningsToExceptions="false"
          verbose="true">
     <testsuite>
         <directory suffix="Test.php">tests</directory>

@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Instructor\Auto;
 use DBAL\Database;
 
+error_reporting(0);
+
 class AutoTest extends TestCase{
     protected $auto;
     protected $db;

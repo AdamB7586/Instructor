@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Instructor\Instructor;
 use DBAL\Database;
 
+error_reporting(0);
+
 class InstructorTest extends TestCase{
     protected $instructor;
     protected $db;
