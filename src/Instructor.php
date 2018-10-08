@@ -85,6 +85,7 @@ class Instructor extends User{
     public function getInstructorInfo($id) {
         $instInfo = $this->db->select($this->instructor_table, ['id' => intval($id)]);
         if(is_array($instInfo)){
+            $instInfo['status'] = $this->status[$instInfo['isactive']];
             $instInfo['offers'] = unserialize($instInfo['offers']);
             $instInfo['lessons'] = unserialize($instInfo['lessons']);
             $instInfo['social'] = unserialize($instInfo['social']);
