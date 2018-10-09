@@ -74,7 +74,7 @@ class Instructor extends User{
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllInstructors($active = 1) {
-        return $this->db->selectAll($this->instructor_table, ['isactive' => $active], '*', ['id' => 'DESC']);
+        return $this->db->selectAll($this->table_users, ['isactive' => $active], '*', ['id' => 'DESC']);
     }
     
     /**
@@ -83,7 +83,7 @@ class Instructor extends User{
      * @return array|false This should be an array of the instructor information if the id exists else will be false
      */
     public function getInstructorInfo($id) {
-        $instInfo = $this->db->select($this->instructor_table, ['id' => intval($id)]);
+        $instInfo = $this->getUserInfo($id);
         if(is_array($instInfo)){
             $instInfo['status'] = $this->status[$instInfo['isactive']];
             $instInfo['offers'] = unserialize($instInfo['offers']);
@@ -109,7 +109,7 @@ class Instructor extends User{
             $additionalInfo['postcodes'] = ','.trim(str_replace([' ', '.'], ['', ','], $additionalInfo['postcodes']), ',').',';
             $additionalInfo['about'] = Modifier::setNullOnEmpty($additionalInfo['about']);
             $additionalInfo['offers'] = Modifier::setNullOnEmpty($additionalInfo['offers']);
-            return $this->db->insert($this->instructor_table, array_merge(['id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)], $additionalInfo));
+            return $this->db->insert($this->table_users, array_merge(['id' => intval($id), 'name' => $name, 'gender' => $gender, 'email' => $email, 'website' => $domain, 'password' => $this->getHash($password), 'hash' => base64_encode($password)], $additionalInfo));
         }
         return false;
     }
@@ -124,7 +124,7 @@ class Instructor extends User{
         $information['about'] = Modifier::setNullOnEmpty($information['about']);
         $information['offers'] = Modifier::setNullOnEmpty($information['offers']);
         $information['notes'] = Modifier::setNullOnEmpty($information['notes']);
-        return $this->db->update($this->instructor_table, $information, ['id' => $id]);
+        return $this->db->update($this->table_users, $information, ['id' => $id]);
     }
     
     /**
@@ -137,7 +137,7 @@ class Instructor extends User{
         foreach($information as $info => $value) {
             $information[$info] = Modifier::setNullOnEmpty($information[$info]);
         }
-        return $this->db->update($this->instructor_table, $information, ['id' => $id]);
+        return $this->db->update($this->table_users, $information, ['id' => $id]);
     }
     
     /**
@@ -151,7 +151,7 @@ class Instructor extends User{
         if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()) {
-            return $this->db->update($this->instructor_table, ['lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()], ['id' => $id]);
+            return $this->db->update($this->table_users, ['lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()], ['id' => $id]);
         }
         return false;
     }
@@ -167,7 +167,7 @@ class Instructor extends User{
         if($active === true) {
             $where['isactive'] = ['>=', 1];
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
+        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
     }
     
     /**
@@ -191,7 +191,7 @@ class Instructor extends User{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -204,7 +204,7 @@ class Instructor extends User{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
     }
     
     /**
@@ -222,7 +222,7 @@ class Instructor extends User{
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->instructor_table}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
         }
         return false;
     }
@@ -268,7 +268,7 @@ class Instructor extends User{
     public function addPriority($id) {
         if(is_numeric($id)) {
             $date = new \DateTime();
-            return $this->db->update($this->instructor_table, ['priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')], ['id' => intval($id)]);
+            return $this->db->update($this->table_users, ['priority' => 1, 'priority_start_date' => $date->format('Y-m-d H:i:s')], ['id' => intval($id)]);
         }
         return false;
     }
@@ -279,7 +279,7 @@ class Instructor extends User{
     public function removePriorities() {
         $date = new \DateTime();
         $date->modify("-{$this->priority_period}");
-        $this->db->update($this->instructor_table, ['priority' => 0, 'priority_start_date' => NULL], ['priority' => 1, 'priority_start_date' => ['<=', $date->format('Y-m-d H:i:s')]]);
+        $this->db->update($this->table_users, ['priority' => 0, 'priority_start_date' => NULL], ['priority' => 1, 'priority_start_date' => ['<=', $date->format('Y-m-d H:i:s')]]);
     }
     
     /**
@@ -300,7 +300,7 @@ class Instructor extends User{
         if(is_numeric($id)){
             $where = ['id' => $id];
         }
-        return $this->db->update($this->instructor_table, ['delcache' => 1], $where);
+        return $this->db->update($this->table_users, ['delcache' => 1], $where);
     }
     
     /**
