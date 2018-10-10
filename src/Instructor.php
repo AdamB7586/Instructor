@@ -161,11 +161,16 @@ class Instructor extends User{
      * @param array $where This should be the criteria that the database query needs to match
      * @param int $limit This should be the maximum number of instructors to display
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
+     * @param boolean|array $order If you only change the order set the field you want to order by as an array else set to false
+     * @param boolean $onlyOffer Returns only those who have an offer if set to true
      * @return array|false Will return a list of instructors if any match the criteria else will return false
      */
-    public function getInstructors($where, $limit = 50, $active = true, $order = false) {
+    public function getInstructors($where, $limit = 50, $active = true, $order = false, $onlyOffer = false) {
         if($active === true) {
             $where['isactive'] = ['>=', 1];
+        }
+        if($onlyOffer === true){
+            $where['offers'] = 'IS NOT NULL';
         }
         return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offer' => 'DESC', 'RAND()']), $limit));
     }
@@ -176,9 +181,10 @@ class Instructor extends User{
      * @param int $limit The maximum number of instructors to display
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
+     * @param boolean $onlyOffer Returns only those who have an offer if set to true
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false) {
+    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false) {
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
@@ -191,7 +197,10 @@ class Instructor extends User{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
+            if($onlyOffer === true){
+                $offerSQL = " AND `offers` IS NOT NULL";
+            }
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -201,10 +210,14 @@ class Instructor extends User{
      * @param string $postcode This should be the postcode area
      * @param int $limit The maximum number of instructors to display
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
+     * @param boolean $onlyOffer Returns only those who have an offer if set to true
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
+    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false) {
+        if($onlyOffer === true){
+            $offerSQL = " AND `offers` IS NOT NULL";
+        }
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
     }
     
     /**
@@ -212,9 +225,10 @@ class Instructor extends User{
      * @param array $postcodes This should be the postcode areas as an array
      * @param int $limit The maximum number of instructors to display
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
+     * @param boolean $onlyOffer Returns only those who have an offer if set to true
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findInstructorsByPostcodeArray($postcodes, $limit = 50, $hasOffer = false){
+    public function findInstructorsByPostcodeArray($postcodes, $limit = 50, $hasOffer = false, $onlyOffer = false){
         if(is_array($postcodes)){
             $sql = [];
             $values = [];
@@ -222,7 +236,10 @@ class Instructor extends User{
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values($values)));
+            if($onlyOffer === true){
+                $offerSQL = " AND `offers` IS NOT NULL";
+            }
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$offerSQL} AND ".implode(" OR ", $sql)." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values($values)));
         }
         return false;
     }
@@ -235,7 +252,7 @@ class Instructor extends User{
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
     public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true) {
-        return $this->findClosestInstructors($postcode, $limit, $cover, true);
+        return $this->findClosestInstructors($postcode, $limit, $cover, true, true);
     }
     
     /**
