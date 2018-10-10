@@ -167,7 +167,7 @@ class Instructor extends User{
         if($active === true) {
             $where['isactive'] = ['>=', 1];
         }
-        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
+        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offer' => 'DESC', 'RAND()']), $limit));
     }
     
     /**
@@ -191,7 +191,7 @@ class Instructor extends User{
                 $coverSQL = "";
                 $distance = 15;
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -204,7 +204,7 @@ class Instructor extends User{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false) {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
     }
     
     /**
@@ -222,7 +222,7 @@ class Instructor extends User{
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY".($hasOffer !== false ? " `offer` DESC," : "")." `priority` DESC, RAND() LIMIT {$limit};", array_values($values)));
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL} AND ".implode(" OR ", $sql)." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values($values)));
         }
         return false;
     }
