@@ -6,6 +6,7 @@ use DBAL\Database;
 use GoogleMapsGeocoder;
 use UserAuth\User;
 use Instructor\Modifiers\Modifier;
+use Instructor\Modifiers\SQLBuilder;
 
 class Instructor extends User{
     protected $db;
@@ -182,9 +183,10 @@ class Instructor extends User{
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @param boolean $onlyOffer Returns only those who have an offer if set to true
+     * @param array $additionalInfo Any additional SQl query parameters should be added as an array here
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false) {
+    public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
         $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
         if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
@@ -200,7 +202,8 @@ class Instructor extends User{
             if($onlyOffer === true){
                 $offerSQL = " AND `offers` IS NOT NULL";
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL} HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
+            $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -211,13 +214,15 @@ class Instructor extends User{
      * @param int $limit The maximum number of instructors to display
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @param boolean $onlyOffer Returns only those who have an offer if set to true
+     * @param array $additionalInfo Any additional SQl query parameters should be added as an array here
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false) {
+    public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
         if($onlyOffer === true){
             $offerSQL = " AND `offers` IS NOT NULL";
         }
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
+        $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
     }
     
     /**
@@ -249,10 +254,11 @@ class Instructor extends User{
      * @param string $postcode This should be the postcode that you wish to find the closest instructor to
      * @param int $limit The maximum number of instructors to display
      * @param boolean $cover If the search is only postcodes set this to true to only display instructors who have this listed as an area they cover
+     * @param array $additionalInfo Any additional SQl query parameters should be added as an array here
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true) {
-        return $this->findClosestInstructors($postcode, $limit, $cover, true, true);
+    public function findClosestInstructorWithOffer($postcode, $limit = 50, $cover = true, $additionalInfo = []) {
+        return $this->findClosestInstructors($postcode, $limit, $cover, true, true, $additionalInfo);
     }
     
     /**
