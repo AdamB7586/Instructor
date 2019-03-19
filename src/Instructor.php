@@ -10,7 +10,7 @@ use Instructor\Modifiers\SQLBuilder;
 
 class Instructor extends User{
     protected $db;
-    protected $status = [2 => 'Pending', 1 => 'Active', 0 => 'Disabled', -1 => 'Suspended', 3 => 'Delisted'];
+    protected $status = [-1 => 'Suspended', 0 => 'Disabled', 1 => 'Active', 2 => 'Pending', 3 => 'Delisted'];
     
     public $instructor_table = 'instructors';
     public $testimonial_table = 'testimonials';
@@ -318,6 +318,48 @@ class Instructor extends User{
         return false;
     }
     
+    /**
+     * Get the information for selected instructors
+     * @param string $list the list of instructor ids (must be comma separated)
+     * @return array|false If the instructors exist they will be returned as an array else will return false
+     */
+    public function getSelectedInstructors($list) {
+        return $this->getActiveInstructorsByList($list, 'id');
+    }
+    
+    /**
+     * Get the information for instructors in selected areas
+     * @param string $list The list of main postcode areas e.g. AB,WF,TN (must be comma separated)
+     * @return array|false Returns an array of instructors if any exist in the area else returns false
+     */
+    public function getInstructorsBySelectedArea($list) {
+        return $this->getActiveInstructorsByList($list, 'postcode_areas', 'LIKE ?');
+    }
+    
+    /**
+     * Gets a list of active instructors from lists and selected fields
+     * @param string $list This should be the list that you want to retrieve instructors for
+     * @param string $field The field that you are searching
+     * @param string $operator The SQL operator to use in the search query
+     * @return array|false If the given information is correct and instructors exists an array will be returned else returns false
+     */
+    private function getActiveInstructorsByList($list, $field, $operator = '= ?') {
+        $listArray = $this->getListArray($list);
+        if(is_array($listArray)) {
+            for($s = 0; $s < count($listArray); $s++){
+                $instructors[] = sprintf("`%s` %s", $field, $operator);
+                $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
+            }
+            return $this->db->query("SELECT * FROM `{$this->table_users}` WHERE `active` >= 1 AND (".implode(' OR ', $instructors).");", $values);
+        }
+        return false;
+    }
+    
+    /**
+     * Sets the database delete cache field
+     * @param int|boolean $id This should be the instructors number for an individual instructor else set to false to set for all instructors
+     * @return boolean Returns true if successfully updated else returns false
+     */
     public function deleteCache($id = false) {
         $where = [];
         if(is_numeric($id)){
@@ -339,7 +381,7 @@ class Instructor extends User{
     /**
      * Format the postcode string for viewing
      * @param string $postcodes The list of postcodes that the instructor covers
-     * @return string A formated list will be returned to make it more easily readable
+     * @return string A formatted list will be returned to make it more easily readable
      */
     protected function instPostcodes($postcodes) {
         return str_replace(',', ', ', trim($postcodes, ','));
@@ -375,5 +417,14 @@ class Instructor extends User{
         $characters = ['!', '"', '£', '$', '%', '^', '&', '*', '(', ')', ' '];
         $numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ''];
         return str_replace($characters, $numbers, trim($string));
+    }
+    
+    /**
+     * Converts a list string (comma separated) in 
+     * @param type $list
+     * @return type
+     */
+    protected function getListArray($list) {
+        return explode(',', str_replace(' ', '', trim(trim($list), ',')));
     }
 }
