@@ -343,7 +343,7 @@ class Instructor extends User{
      * @param string $operator The SQL operator to use in the search query
      * @return array|false If the given information is correct and instructors exists an array will be returned else returns false
      */
-    private function getActiveInstructorsByList($list, $field, $operator = '= ?') {
+    protected function getActiveInstructorsByList($list, $field, $operator = '= ?') {
         $listArray = $this->getListArray($list);
         if(is_array($listArray)) {
             for($s = 0; $s < count($listArray); $s++){
