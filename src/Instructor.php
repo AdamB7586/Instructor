@@ -87,9 +87,9 @@ class Instructor extends User{
         $instInfo = $this->getUserInfo($id);
         if(is_array($instInfo)){
             $instInfo['status'] = $this->status[$instInfo['isactive']];
-            $instInfo['offers'] = unserialize($instInfo['offers']);
-            $instInfo['lessons'] = unserialize($instInfo['lessons']);
-            $instInfo['social'] = unserialize($instInfo['social']);
+            $instInfo['offers'] = unserialize(stripslashes($instInfo['offers']));
+            $instInfo['lessons'] = unserialize(stripslashes($instInfo['lessons']));
+            $instInfo['social'] = unserialize(stripslashes($instInfo['social']));
         }
         return $instInfo;
     }
