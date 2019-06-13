@@ -122,9 +122,9 @@ class Instructor extends User{
      * @return boolean If the information is successfully updated will return true else returns false
      */
     public function updateInstructor($id, $information = []) {
-        $information['about'] = Modifier::setNullOnEmpty($information['about']);
-        $information['offers'] = Modifier::setNullOnEmpty($information['offers']);
-        $information['notes'] = Modifier::setNullOnEmpty($information['notes']);
+        if(isset($information['about'])){$information['about'] = Modifier::setNullOnEmpty($information['about']);}
+        if(isset($information['offers'])){$information['offers'] = Modifier::setNullOnEmpty($information['offers']);}
+        if(isset($information['notes'])){$information['notes'] = Modifier::setNullOnEmpty($information['notes']);}
         return $this->db->update($this->table_users, $information, ['id' => $id]);
     }
     
