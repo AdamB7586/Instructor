@@ -191,6 +191,7 @@ class Instructor extends User{
         if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
         $maps->geocode();
         if($maps->getLatitude()) {
+            $offerSQL = "";
             if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
                 $distance = 100;
@@ -200,7 +201,7 @@ class Instructor extends User{
                 $distance = 15;
             }
             if($onlyOffer === true){
-                $offerSQL = " AND `offers` IS NOT NULL";
+                $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
             return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
@@ -218,8 +219,9 @@ class Instructor extends User{
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
+        $offerSQL = "";
         if($onlyOffer === true){
-            $offerSQL = " AND `offers` IS NOT NULL";
+            $offerSQL.= " AND `offers` IS NOT NULL";
         }
         $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
         return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
@@ -241,8 +243,9 @@ class Instructor extends User{
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
+            $offerSQL = "";
             if($onlyOffer === true){
-                $offerSQL = " AND `offers` IS NOT NULL";
+                $offerSQL.= " AND `offers` IS NOT NULL";
             }
             return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$offerSQL} AND ".implode(" OR ", $sql)." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values($values)));
         }
@@ -297,7 +300,7 @@ class Instructor extends User{
     }
 
     /**
-     * Remove anyone from the priority list who has been there for longer than the alloted period
+     * Remove anyone from the priority list who has been there for longer than the allotted period
      */
     public function removePriorities() {
         $date = new \DateTime();
@@ -346,7 +349,10 @@ class Instructor extends User{
     protected function getActiveInstructorsByList($list, $field, $operator = '= ?') {
         $listArray = $this->getListArray($list);
         if(is_array($listArray)) {
-            for($s = 0; $s < count($listArray); $s++){
+            $instructors = [];
+            $values = [];
+            $numItems = count($listArray);
+            for($s = 0; $s < $numItems; $s++){
                 $instructors[] = sprintf("`%s` %s", $field, $operator);
                 $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
             }
