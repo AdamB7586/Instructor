@@ -37,19 +37,19 @@ class SQLBuilder {
         elseif(is_array($value)) {
             $keys = [];
             if(!is_array(array_values($value)[0])) {
-                $this->values[':'.strtoupper(SafeString::makeSafe($field))] = (isset($value[1]) ? $value[1] : array_values($value)[0]);
+                self::$values[':'.strtoupper(SafeString::makeSafe($field))] = (isset($value[1]) ? $value[1] : array_values($value)[0]);
                 $operator = (isset($value[0]) ? $value[0] : key($value));
             }
             else{
                 foreach(array_values($value)[0] as $op => $array_value) {
-                    $this->values[':'.strtoupper(SafeString::makeSafe($field))] = $array_value;
+                    self::$values[':'.strtoupper(SafeString::makeSafe($field))] = $array_value;
                     $keys[] = '?';
                 }
                 $operator = key($value);
             }
             return str_replace('?', ':'.strtoupper(SafeString::makeSafe($field)), sprintf("`%s` %s", SafeString::makeSafe($field), sprintf(Operators::getOperatorFormat($operator), implode($keys, ', '))));
         }
-        $this->values[':'.strtoupper(SafeString::makeSafe($field))] = $value;
+        self::$values[':'.strtoupper(SafeString::makeSafe($field))] = $value;
         return sprintf("`%s` = :".strtoupper(SafeString::makeSafe($field)), SafeString::makeSafe($field));
     }
 }

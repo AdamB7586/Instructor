@@ -427,8 +427,8 @@ class Instructor extends User{
     
     /**
      * Converts a list string (comma separated) in 
-     * @param type $list
-     * @return type
+     * @param string $list This should be a list in a comma separated string
+     * @return array Will return an array of values
      */
     protected function getListArray($list) {
         return explode(',', str_replace(' ', '', trim(trim($list), ',')));
