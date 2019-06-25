@@ -1,21 +1,17 @@
 build:
     environment:
-        php: '7.1.0'
+        php: '7.3.0'
         
     project_setup:
         before:
             - mysql -e "CREATE DATABASE IF NOT EXISTS instructor"
-            
-    tests:
-        override:
-            -
-                command: 'vendor/bin/phpunit --coverage-clover=coverage'
-                coverage:
-                    file: 'coverage'
-                    format: 'clover'
 
 before_commands:
     - "composer install --prefer-source"
+
+tools:
+    php_code_coverage:
+        test_command: vendor/bin/phpunit
 
 checks:
     php:

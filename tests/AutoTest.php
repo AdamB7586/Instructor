@@ -12,7 +12,7 @@ class AutoTest extends TestCase{
     protected $auto;
     protected $db;
 
-    public function setUp() {
+    public function setUp(): void {
         $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
         if(!$this->db->isConnected()){
             $this->markTestSkipped(
@@ -26,7 +26,7 @@ class AutoTest extends TestCase{
         }
     }
     
-    public function tearDown() {
+    public function tearDown(): void {
         $this->auto = null;
         $this->db = null;
     }
