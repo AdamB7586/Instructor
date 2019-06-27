@@ -5,7 +5,7 @@ namespace Instructor;
 use DBAL\Database;
 use GoogleMapsGeocoder;
 use UserAuth\User;
-use Instructor\Modifiers\Modifier;
+use DBAL\Modifiers\Modifier;
 use Instructor\Modifiers\SQLBuilder;
 
 class Instructor extends User{
