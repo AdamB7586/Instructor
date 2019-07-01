@@ -62,4 +62,12 @@ class Tutor extends Instructor {
         $this->querySQL = " AND `tutor` = 1";
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
+    
+    /**
+     * Override parent class
+     * @return boolean
+     */
+    public function removePriorities(){
+        return false;
+    }
 }
