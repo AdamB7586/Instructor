@@ -204,7 +204,7 @@ class Instructor extends User{
                 $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};"));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer, false, $additionalInfo);
     }
@@ -224,7 +224,7 @@ class Instructor extends User{
             $offerSQL.= " AND `offers` IS NOT NULL";
         }
         $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};"));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", SQLBuilder::$values));
     }
     
     /**
@@ -249,7 +249,7 @@ class Instructor extends User{
                 $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$offerSQL} AND ".implode(" OR ", $sql).(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values($values)));
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$offerSQL} AND ".implode(" OR ", $sql).(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." RAND() LIMIT {$limit};", array_values(array_merge($values, SQLBuilder::$values))));
         }
         return false;
     }
