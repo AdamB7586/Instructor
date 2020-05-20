@@ -33,19 +33,6 @@ class InstructorTest extends TestCase{
     
     /**
      * @covers Instructor\Instructor::__construct
-     * @covers Instructor\Instructor::setAPIKey
-     * @covers Instructor\Instructor::getAPIKey
-     */
-    public function testSetAPIKey(){
-        $this->assertFalse($this->instructor->getAPIKey());
-        $this->assertObjectHasAttribute('display_testimonials', $this->instructor->setAPIKey(1565785));
-        $this->assertFalse($this->instructor->getAPIKey());
-        $this->assertObjectHasAttribute('display_testimonials', $this->instructor->setAPIKey('my-api-key'));
-        $this->assertEquals('my-api-key', $this->instructor->getAPIKey());
-    }
-    
-    /**
-     * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::instructorStatus
      */
     public function testGetStatus(){
@@ -108,7 +95,6 @@ class InstructorTest extends TestCase{
     /**
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::updateInstructorLocation
-     * @covers Instructor\Instructor::getAPIKey
      */
     public function testUpdateInstructorLocation(){
         $this->markTestIncomplete();
@@ -123,7 +109,6 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::instTestimonials
      * @covers Instructor\Instructor::findClosestInstructors
      * @covers Instructor\Instructor::findInstructorsByPostcode
-     * @covers Instructor\Instructor::getAPIKey
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */
@@ -141,7 +126,6 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::instTestimonials
      * @covers Instructor\Instructor::findClosestInstructors
      * @covers Instructor\Instructor::findInstructorsByPostcode
-     * @covers Instructor\Instructor::getAPIKey
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */

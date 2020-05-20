@@ -37,23 +37,6 @@ class Instructor extends User{
     }
     
     /**
-     * Sets the API Key for the Google Geocoding Object
-     * @param string $key This should be your Google API Key
-     * @return $this
-     */
-    public function setAPIKey($key) {
-        return $this;
-    }
-    
-    /**
-     * Gets the Google API key if set
-     * @return string|false If the API key is set it will be returned else will return false
-     */
-    public function getAPIKey() {
-        return false;
-    }
-    
-    /**
      * Returns the status text for the given status number
      * @param int $status This should be the status number you wish to get the test for
      * @return string|false This will be the status text if key exists else will be false

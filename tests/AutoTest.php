@@ -44,7 +44,6 @@ class AutoTest extends TestCase{
      * @covers Instructor\Instructor::findClosestInstructors
      * @covers Instructor\Auto::findInstructorsByPostcode
      * @covers Instructor\Instructor::findInstructorsByPostcode
-     * @covers Instructor\Instructor::getAPIKey
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */
