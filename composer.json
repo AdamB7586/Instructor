@@ -4,8 +4,8 @@
     "type": "library",
     "require": {
         "adamb/database": "^1.0",
-        "adamb/google-maps-geocoder": "^4.2",
-        "adamb/user": "^1.3"
+        "adamb/user": "^1.3",
+        "codescheme/uk-postcodes": "^1.0"
     },
     "license": "proprietary",
     "authors": [

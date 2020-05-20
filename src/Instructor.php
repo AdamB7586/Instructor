@@ -3,13 +3,14 @@
 namespace Instructor;
 
 use DBAL\Database;
-use GoogleMapsGeocoder;
+use Codescheme\Ukpostcodes\Postcode;
 use UserAuth\User;
 use DBAL\Modifiers\Modifier;
 use Instructor\Modifiers\SQLBuilder;
 
 class Instructor extends User{
     protected $db;
+    protected $postcodeLookup;
     protected $status = [-1 => 'Suspended', 0 => 'Disabled', 1 => 'Active', 2 => 'Pending', 3 => 'Delisted'];
     
     public $instructor_table = 'instructors';
@@ -19,8 +20,6 @@ class Instructor extends User{
     
     public $display_testimonials = false;
     
-    protected $apiKey;
-    
     protected $querySQL = '';
     
     /**
@@ -29,6 +28,7 @@ class Instructor extends User{
      */
     public function __construct(Database $db, $language = "en_GB") {
         parent::__construct($db, $language);
+        $this->postcodeLookup = new Postcode();
         $this->table_users = $this->instructor_table;
         $this->table_attempts = $this->instructor_table.'_attempts';
         $this->table_requests = $this->instructor_table.'_requests';
@@ -42,7 +42,6 @@ class Instructor extends User{
      * @return $this
      */
     public function setAPIKey($key) {
-        $this->apiKey = $key;
         return $this;
     }
     
@@ -51,9 +50,6 @@ class Instructor extends User{
      * @return string|false If the API key is set it will be returned else will return false
      */
     public function getAPIKey() {
-        if(is_string($this->apiKey)) {
-            return $this->apiKey;
-        }
         return false;
     }
     
@@ -148,11 +144,9 @@ class Instructor extends User{
      * @return boolean If the information is updated will return true else returns false
      */
     public function updateInstructorLocation($id, $postcode) {
-        $maps = new GoogleMapsGeocoder($postcode.', UK');
-        if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
-        $maps->geocode();
-        if($maps->getLatitude()) {
-            return $this->db->update($this->table_users, ['lat' => $maps->getLatitude(), 'lng' => $maps->getLongitude()], ['id' => $id]);
+        $postcodeInfo = $this->postcodeLookup->postcodeLookup($postcode);
+        if($postcodeInfo->status === 200) {
+            return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result->latitude, 'lng' => $postcodeInfo->result->longitude], ['id' => $id]);
         }
         return false;
     }
@@ -187,10 +181,8 @@ class Instructor extends User{
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
-        $maps = new GoogleMapsGeocoder($postcode.', UK', 'xml');
-        if($this->getAPIKey() !== false) {$maps->setApiKey($this->getAPIKey());}
-        $maps->geocode();
-        if($maps->getLatitude()) {
+        $postcodeInfo = $this->postcodeLookup->postcodeLookup($postcode);
+        if($postcodeInfo->status === 200) {
             $offerSQL = "";
             if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
@@ -204,7 +196,7 @@ class Instructor extends User{
                 $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$maps->getLatitude()}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$maps->getLongitude()}')) + sin(radians('{$maps->getLatitude()}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$postcodeInfo->result->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$postcodeInfo->result->longitude}')) + sin(radians('{$postcodeInfo->result->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer, false, $additionalInfo);
     }
