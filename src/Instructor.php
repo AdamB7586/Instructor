@@ -184,13 +184,12 @@ class Instructor extends User{
         $postcodeInfo = $this->postcodeLookup->postcodeLookup($postcode);
         if($postcodeInfo->status === 200) {
             $offerSQL = "";
+            $distance = 100;
             if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
                 $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
-                $distance = 100;
             }
             else{
                 $coverSQL = "";
-                $distance = 15;
             }
             if($onlyOffer === true){
                 $offerSQL.= " AND `offers` IS NOT NULL";
