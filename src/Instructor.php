@@ -49,6 +49,14 @@ class Instructor extends User{
     }
     
     /**
+     * Returns the list of statuses
+     * @return array
+     */
+    public function listStatuses(){
+        return $this->status;
+    }
+    
+    /**
      * Get a list of all of the instructors 
      * @param int $active If set to a number should be the active value else should be set to false for all instructors
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
