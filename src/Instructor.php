@@ -33,7 +33,6 @@ class Instructor extends User{
         $this->table_attempts = $this->instructor_table.'_attempts';
         $this->table_requests = $this->instructor_table.'_requests';
         $this->table_sessions = $this->instructor_table.'_sessions';
-        $this->removePriorities();
     }
     
     /**
