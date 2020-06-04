@@ -157,7 +157,7 @@ class Instructor extends User{
         if($onlyOffer === true){
             $where['offers'] = 'IS NOT NULL';
         }
-        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offer' => 'DESC', 'RAND()']), $limit));
+        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offers' => 'DESC', 'RAND()']), $limit));
     }
     
     /**
