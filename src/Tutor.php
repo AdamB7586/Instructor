@@ -11,7 +11,8 @@ class Tutor extends Instructor {
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
     public function getAllTutors($active = 1) {
-        return $this->db->selectAll($this->instructor_table, ['tutor' => 1, 'isactive' => $active], '*', ['id' => 'DESC']);
+        $where['isactive'] = (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : []);
+        return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], $where)), '*', ['id' => 'DESC']);
     }
     
     /**
