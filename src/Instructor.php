@@ -3,7 +3,7 @@
 namespace Instructor;
 
 use DBAL\Database;
-use Codescheme\Ukpostcodes\Postcode;
+use Jabranr\PostcodesIO\PostcodesIO;
 use UserAuth\User;
 use DBAL\Modifiers\Modifier;
 use Instructor\Modifiers\SQLBuilder;
@@ -28,7 +28,7 @@ class Instructor extends User{
      */
     public function __construct(Database $db, $language = "en_GB") {
         parent::__construct($db, $language);
-        $this->postcodeLookup = new Postcode();
+        $this->postcodeLookup = new PostcodeIO();
         $this->table_users = $this->instructor_table;
         $this->table_attempts = $this->instructor_table.'_attempts';
         $this->table_requests = $this->instructor_table.'_requests';
@@ -134,7 +134,7 @@ class Instructor extends User{
      * @return boolean If the information is updated will return true else returns false
      */
     public function updateInstructorLocation($id, $postcode) {
-        $postcodeInfo = $this->postcodeLookup->postcodeLookup($postcode);
+        $postcodeInfo = $this->postcodeLookup->query($postcode);
         if($postcodeInfo->status === 200) {
             return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result->latitude, 'lng' => $postcodeInfo->result->longitude], ['id' => $id]);
         }
@@ -171,7 +171,7 @@ class Instructor extends User{
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
-        $postcodeInfo = $this->postcodeLookup->postcodeLookup($postcode);
+        $postcodeInfo = $this->postcodeLookup->query($postcode);
         if($postcodeInfo->status === 200) {
             $offerSQL = "";
             $distance = 100;
