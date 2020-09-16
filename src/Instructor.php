@@ -136,7 +136,7 @@ class Instructor extends User{
     public function updateInstructorLocation($id, $postcode) {
         $postcodeInfo = $this->postcodeLookup->query($postcode);
         if($postcodeInfo->status === 200 && !empty($postcodeInfo->result)) {
-            return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result->latitude, 'lng' => $postcodeInfo->result->longitude], ['id' => $id]);
+            return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result['latitude'], 'lng' => $postcodeInfo->result['longitude']], ['id' => $id]);
         }
         return false;
     }
@@ -185,7 +185,7 @@ class Instructor extends User{
                 $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$postcodeInfo->result->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$postcodeInfo->result->longitude}')) + sin(radians('{$postcodeInfo->result->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$postcodeInfo->result['latitude']}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$postcodeInfo->result['longitude']}')) + sin(radians('{$postcodeInfo->result['latitude']}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer, false, $additionalInfo);
     }
