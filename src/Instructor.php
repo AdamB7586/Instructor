@@ -28,7 +28,7 @@ class Instructor extends User{
      */
     public function __construct(Database $db, $language = "en_GB") {
         parent::__construct($db, $language);
-        $this->postcodeLookup = new PostcodeIO();
+        $this->postcodeLookup = new PostcodesIO();
         $this->table_users = $this->instructor_table;
         $this->table_attempts = $this->instructor_table.'_attempts';
         $this->table_requests = $this->instructor_table.'_requests';
