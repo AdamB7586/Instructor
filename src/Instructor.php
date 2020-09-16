@@ -135,7 +135,7 @@ class Instructor extends User{
      */
     public function updateInstructorLocation($id, $postcode) {
         $postcodeInfo = $this->postcodeLookup->query($postcode);
-        if($postcodeInfo->status === 200) {
+        if($postcodeInfo->status === 200 && !empty($postcodeInfo->result)) {
             return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result->latitude, 'lng' => $postcodeInfo->result->longitude], ['id' => $id]);
         }
         return false;
@@ -172,7 +172,7 @@ class Instructor extends User{
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false, $additionalInfo = []) {
         $postcodeInfo = $this->postcodeLookup->query($postcode);
-        if($postcodeInfo->status === 200) {
+        if($postcodeInfo->status === 200 && !empty($postcodeInfo->result)) {
             $offerSQL = "";
             $distance = 100;
             if($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
