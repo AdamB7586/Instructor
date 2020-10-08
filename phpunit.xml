@@ -1,36 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.2/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         forceCoversAnnotation="true"
-         beStrictAboutCoversAnnotation="false"
-         beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="false"
-         convertWarningsToExceptions="false"
-         verbose="true">
-    <testsuites>
-        <testsuite name="default">
-            <directory suffix="Test.php">tests</directory>
-        </testsuite>
-    </testsuites>
-
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
-    
-    <logging>
-        <log type="coverage-clover" target="clover.xml"/>
-    </logging>
-    
-    <php>
-        <var name="HOSTNAME" value="localhost"/>
-        <var name="USERNAME" value="root"/>
-        <var name="PASSWORD" value=""/>
-        <var name="DATABASE" value="instructor"/>
-        <var name="DRIVER" value="mysql"/>
-    </php>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" bootstrap="vendor/autoload.php" forceCoversAnnotation="true" beStrictAboutCoversAnnotation="false" beStrictAboutOutputDuringTests="true" beStrictAboutTodoAnnotatedTests="true" convertErrorsToExceptions="true" convertNoticesToExceptions="false" convertWarningsToExceptions="false" verbose="true">
+  <coverage processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">src</directory>
+    </include>
+    <report>
+      <clover outputFile="clover.xml"/>
+    </report>
+  </coverage>
+  <testsuites>
+    <testsuite name="default">
+      <directory suffix="Test.php">tests</directory>
+    </testsuite>
+  </testsuites>
+  <logging/>
+  <php>
+    <var name="HOSTNAME" value="localhost"/>
+    <var name="USERNAME" value="root"/>
+    <var name="PASSWORD" value=""/>
+    <var name="DATABASE" value="instructor"/>
+    <var name="DRIVER" value="mysql"/>
+  </php>
 </phpunit>
