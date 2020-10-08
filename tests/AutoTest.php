@@ -8,25 +8,27 @@ use DBAL\Database;
 
 error_reporting(0);
 
-class AutoTest extends TestCase{
+class AutoTest extends TestCase
+{
     protected $auto;
     protected $db;
 
-    public function setUp(): void {
+    public function setUp(): void
+    {
         $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
-        if(!$this->db->isConnected()){
+        if (!$this->db->isConnected()) {
             $this->markTestSkipped(
                 'No local database connection is available'
             );
-        }
-        else{
+        } else {
             $this->db->query(file_get_contents(dirname(dirname(__FILE__)).'/database/mysql_database.sql'));
             $this->db->query(file_get_contents(dirname(__FILE__).'/sample_data/mysql_data.sql'));
             $this->auto = new Auto($this->db);
         }
     }
     
-    public function tearDown(): void {
+    public function tearDown(): void
+    {
         $this->auto = null;
         $this->db = null;
     }
@@ -47,7 +49,8 @@ class AutoTest extends TestCase{
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */
-    public function testGetInstructors(){
+    public function testGetInstructors()
+    {
         $this->markTestIncomplete();
     }
 }

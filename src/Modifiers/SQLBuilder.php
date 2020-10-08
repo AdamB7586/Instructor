@@ -5,7 +5,8 @@ namespace Instructor\Modifiers;
 use DBAL\Modifiers\SafeString;
 use DBAL\Modifiers\Operators;
 
-class SQLBuilder {
+class SQLBuilder
+{
     
     public static $values = [];
     
@@ -14,10 +15,11 @@ class SQLBuilder {
      * @param array $additional This should be any additional info to query on
      * @return string Returns the additional SQL string
      */
-    public static function createAdditionalString($additional){
+    public static function createAdditionalString($additional)
+    {
         $additionalItems = [];
-        if(is_array($additional) && !empty($additional)){
-            foreach($additional as $key => $item){
+        if (is_array($additional) && !empty($additional)) {
+            foreach ($additional as $key => $item) {
                 $additionalItems[] = self::formatValues($key, $item);
             }
         }
@@ -30,18 +32,17 @@ class SQLBuilder {
      * @param mixed $value This should be the value which should either be a string or an array if it contains an operator
      * @return string This should be the string to add to the SQL query
      */
-    protected static function formatValues($field, $value) {
-        if(!is_array($value) && Operators::isOperatorValid($value) && !Operators::isOperatorPrepared($value)) {
+    protected static function formatValues($field, $value)
+    {
+        if (!is_array($value) && Operators::isOperatorValid($value) && !Operators::isOperatorPrepared($value)) {
             return sprintf("`%s` %s", SafeString::makeSafe($field), Operators::getOperatorFormat($value));
-        }
-        elseif(is_array($value)) {
+        } elseif (is_array($value)) {
             $keys = [];
-            if(!is_array(array_values($value)[0])) {
+            if (!is_array(array_values($value)[0])) {
                 self::$values[':'.strtoupper(SafeString::makeSafe($field))] = (isset($value[1]) ? $value[1] : array_values($value)[0]);
                 $operator = (isset($value[0]) ? $value[0] : key($value));
-            }
-            else{
-                foreach(array_values($value)[0] as $op => $array_value) {
+            } else {
+                foreach (array_values($value)[0] as $op => $array_value) {
                     self::$values[':'.strtoupper(SafeString::makeSafe($field))] = $array_value;
                     $keys[] = '?';
                 }

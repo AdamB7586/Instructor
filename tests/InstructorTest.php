@@ -8,25 +8,27 @@ use DBAL\Database;
 
 error_reporting(0);
 
-class InstructorTest extends TestCase{
+class InstructorTest extends TestCase
+{
     protected $instructor;
     protected $db;
 
-    public function setUp(): void {
+    public function setUp(): void
+    {
         $this->db = new Database($GLOBALS['HOSTNAME'], $GLOBALS['USERNAME'], $GLOBALS['PASSWORD'], $GLOBALS['DATABASE']);
-        if(!$this->db->isConnected()){
+        if (!$this->db->isConnected()) {
             $this->markTestSkipped(
                 'No local database connection is available'
             );
-        }
-        else{
+        } else {
             $this->db->query(file_get_contents(dirname(dirname(__FILE__)).'/database/mysql_database.sql'));
             $this->db->query(file_get_contents(dirname(__FILE__).'/sample_data/mysql_data.sql'));
             $this->instructor = new Instructor($this->db);
         }
     }
     
-    public function tearDown(): void {
+    public function tearDown(): void
+    {
         $this->instructor = null;
         $this->db = null;
     }
@@ -35,7 +37,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::instructorStatus
      */
-    public function testGetStatus(){
+    public function testGetStatus()
+    {
         $this->assertEquals('Active', $this->instructor->instructorStatus(1));
         $this->assertEquals('Disabled', $this->instructor->instructorStatus(0));
         $this->assertEquals('Delisted', $this->instructor->instructorStatus(3));
@@ -47,7 +50,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::getAllInstructors
      */
-    public function testListInstructors(){
+    public function testListInstructors()
+    {
         $this->assertArrayHasKey('id', $this->instructor->getAllInstructors(1)[3]);
         $this->assertGreaterThan(5, count($this->instructor->getAllInstructors(1)));
         $this->assertEquals(1, count($this->instructor->getAllInstructors(2)));
@@ -59,7 +63,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::getInstructorInfo
      */
-    public function testGetInstructorInfo(){
+    public function testGetInstructorInfo()
+    {
         $info = $this->instructor->getInstructorInfo(2);
         $this->assertEquals('Helen Smith', $info['name']);
         $this->assertArrayHasKey('postcodes', $info);
@@ -74,13 +79,13 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::addInstructor
      */
-    public function testAddInstructor(){
+    public function testAddInstructor()
+    {
         $this->assertTrue($this->instructor->addInstructor(11, 'Steve Smith', 'test@test.com', 'https://www.steveswebsite.com', 'M', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',LS1,LS2,LS3,LS4,LS5,LS21,')));
         $this->assertEquals('Steve Smith', $this->instructor->getInstructorInfo(11)['name']);
         $this->assertFalse($this->instructor->addInstructor(11, 'Steve Smith', 'test@test.com', 'https://www.steveswebsite.com', 'M', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',LS1,LS2,LS3,LS4,LS5,LS21,')));
         $this->assertFalse($this->instructor->addInstructor(12, 'Diane Turner', 'invalidemail.com', '', 'F', 'mypassword#', array('notes' => 'New Person', 'postcodes' => ',KT1,KT2,KT3,KT6,KT16,')));
         $this->assertFalse($this->instructor->addInstructor(12, 'Diane Turner', 'test@email.com', '', 'F', 'mypassword#', 'not_an_array'));
-        
     }
     
     /**
@@ -88,7 +93,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::updateInstructor
      * @covers Instructor\Instructor::updateInstructorPersonalInformation
      */
-    public function testUpdateInstructor(){
+    public function testUpdateInstructor()
+    {
         $this->markTestIncomplete();
     }
     
@@ -96,7 +102,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::__construct
      * @covers Instructor\Instructor::updateInstructorLocation
      */
-    public function testUpdateInstructorLocation(){
+    public function testUpdateInstructorLocation()
+    {
         $this->markTestIncomplete();
     }
     
@@ -112,7 +119,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */
-    public function testGetInstructors(){
+    public function testGetInstructors()
+    {
         $this->markTestIncomplete();
     }
     
@@ -129,7 +137,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::smallPostcode
      * @covers Instructor\Instructor::replaceIncorrectNumbers
      */
-    public function testGetInstructorsWithOffer(){
+    public function testGetInstructorsWithOffer()
+    {
         $this->markTestIncomplete();
     }
     
@@ -138,7 +147,8 @@ class InstructorTest extends TestCase{
      * @covers Instructor\Instructor::addPriority
      * @covers Instructor\Instructor::removePriorities
      */
-    public function testPriority(){
+    public function testPriority()
+    {
         $this->markTestIncomplete();
     }
 }

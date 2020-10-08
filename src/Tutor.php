@@ -2,15 +2,17 @@
 
 namespace Instructor;
 
-class Tutor extends Instructor {
+class Tutor extends Instructor
+{
     
     
     /**
-     * Get a list of all of the tutors 
+     * Get a list of all of the tutors
      * @param int $active If set to a number should be the active value else should be set to false for all instructors
      * @return array|false Should return an array of all existing instructors or if no values exist will return false
      */
-    public function getAllTutors($active = 1) {
+    public function getAllTutors($active = 1)
+    {
         $where['isactive'] = (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : []);
         return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], $where)), '*', ['id' => 'DESC']);
     }
@@ -20,7 +22,8 @@ class Tutor extends Instructor {
      * @param int $id This should be the franchise number of the instructor
      * @return array|false This should be an array of the instructor information if the id exists else will be false
      */
-    public function getTutorInfo($id) {
+    public function getTutorInfo($id)
+    {
         return $this->getInstructorInfo($id);
     }
     
@@ -31,9 +34,10 @@ class Tutor extends Instructor {
      * @param boolean $active If you only wish to retrieve the active instructors set this to true else for all instructors set to false
      * @return array|false Will return a list of instructors if any match the criteria else will return false
      */
-    public function getTutors($where, $limit = 100, $active = true, $order = false) {
+    public function getTutors($where, $limit = 100, $active = true, $order = false)
+    {
         $where['tutor'] = 1;
-        if($active === true) {
+        if ($active === true) {
             $where['isactive'] = ['>=', 1];
         }
         return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
@@ -47,7 +51,8 @@ class Tutor extends Instructor {
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|boolean If any instructors exist they will be returned as an array else will return false
      */
-    public function findClosestTutors($postcode, $limit = 100, $cover = true, $hasOffer = false) {
+    public function findClosestTutors($postcode, $limit = 100, $cover = true, $hasOffer = false)
+    {
         $this->querySQL = " AND `tutor` = 1";
         return $this->findClosestInstructors($postcode, $limit, $cover, $hasOffer);
     }
@@ -59,7 +64,8 @@ class Tutor extends Instructor {
      * @param boolean $hasOffer If you want to prioritise those with an offer first set this to true
      * @return array|false If any instructors exist they will be returned as an array else will return false
      */
-    public function findTutorsByPostcode($postcode, $limit = 100, $hasOffer = false) {
+    public function findTutorsByPostcode($postcode, $limit = 100, $hasOffer = false)
+    {
         $this->querySQL = " AND `tutor` = 1";
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer);
     }
@@ -68,7 +74,8 @@ class Tutor extends Instructor {
      * Override parent class
      * @return boolean
      */
-    public function removePriorities(){
+    public function removePriorities()
+    {
         return false;
     }
 }
