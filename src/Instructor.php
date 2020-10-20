@@ -22,6 +22,7 @@ class Instructor extends User
     public $display_testimonials = false;
     
     protected $querySQL = '';
+    protected $postcodeInfo;
     
     /**
      * Constructor
@@ -150,9 +151,8 @@ class Instructor extends User
      */
     public function updateInstructorLocation($id, $postcode)
     {
-        $postcodeInfo = $this->postcodeLookup->query($postcode);
-        if ($postcodeInfo->status === 200 && !empty($postcodeInfo->result)) {
-            return $this->db->update($this->table_users, ['lat' => $postcodeInfo->result[0]->latitude, 'lng' => $postcodeInfo->result[0]->longitude], ['id' => $id]);
+        if ($this->checkPostcode($postcode) !== false) {
+            return $this->db->update($this->table_users, ['lat' => $this->postcodeInfo->result[0]->latitude, 'lng' => $this->postcodeInfo->result[0]->longitude], ['id' => $id]);
         }
         return false;
     }
@@ -189,8 +189,7 @@ class Instructor extends User
      */
     public function findClosestInstructors($postcode, $limit = 50, $cover = true, $hasOffer = false, $onlyOffer = false, $additionalInfo = [])
     {
-        $postcodeInfo = $this->postcodeLookup->query($postcode);
-        if ($postcodeInfo->status === 200 && !empty($postcodeInfo->result)) {
+        if ($this->checkPostcode($postcode) !== false) {
             $offerSQL = "";
             $distance = 100;
             if ($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
@@ -202,9 +201,23 @@ class Instructor extends User
                 $offerSQL.= " AND `offers` IS NOT NULL";
             }
             $additionalSring = SQLBuilder::createAdditionalString($additionalInfo);
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$postcodeInfo->result[0]->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$postcodeInfo->result[0]->longitude}')) + sin(radians('{$postcodeInfo->result[0]->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$this->postcodeInfo->result[0]->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$this->postcodeInfo->result[0]->longitude}')) + sin(radians('{$this->postcodeInfo->result[0]->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$offerSQL}".(!empty(trim($additionalSring)) ? " AND ".$additionalSring : '')." HAVING `distance` < {$distance} ORDER BY `priority` DESC,".($hasOffer !== false ? " `offer` DESC," : "")." `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer, false, $additionalInfo);
+    }
+    
+    /**
+     * Check the postcode given
+     * @param string $postcode This should be the given postcode
+     * @return boolean If the postcode is valid true will be returned else will return false
+     */
+    protected function checkPostcode($postcode)
+    {
+        $this->postcodeInfo = $this->postcodeLookup->query($postcode);
+        if ($this->postcodeInfo->status === 200 && !empty($this->postcodeInfo->result)) {
+            return true;
+        }
+        return false;
     }
     
     /**
