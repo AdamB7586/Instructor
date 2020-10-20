@@ -7,6 +7,7 @@ use Jabranr\PostcodesIO\PostcodesIO;
 use UserAuth\User;
 use DBAL\Modifiers\Modifier;
 use Instructor\Modifiers\SQLBuilder;
+use Instructor\Modifiers\Format;
 
 class Instructor extends User
 {
@@ -188,8 +189,8 @@ class Instructor extends User
     {
         if ($this->checkPostcode($postcode) !== false) {
             $distance = 100;
-            if ($cover === true || preg_match('/([A-Z]\S\d?\d)/', $this->smallPostcode($postcode)) === true) {
-                $coverSQL = " AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'";
+            if ($cover === true || preg_match('/([A-Z]\S\d?\d)/', Format::smallPostcode($postcode)) === true) {
+                $coverSQL = " AND `postcodes` LIKE '%,".Format::smallPostcode($postcode).",%'";
             } else {
                 $coverSQL = "";
             }
@@ -223,7 +224,7 @@ class Instructor extends User
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false, $additionalInfo = [])
     {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".$this->smallPostcode($postcode).",%'{$this->querySQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", SQLBuilder::$values));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".Format::smallPostcode($postcode).",%'{$this->querySQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", SQLBuilder::$values));
     }
     
     /**
@@ -274,8 +275,8 @@ class Instructor extends User
                 $instructors[$i]['offers'] = unserialize($instructor['offers']);
                 $instructors[$i]['lessons'] = unserialize($instructor['lessons']);
                 $instructors[$i]['social'] = unserialize($instructor['social']);
-                $instructors[$i]['postcodes'] = $this->instPostcodes($instructor['postcodes']);
-                $instructors[$i]['firstname'] = $this->firstname($instructor['name']);
+                $instructors[$i]['postcodes'] = Format::instPostcodes($instructor['postcodes']);
+                $instructors[$i]['firstname'] = Format::firstname($instructor['name']);
                 $instructors[$i]['testimonials'] = $this->instTestimonials($instructor['id']);
                 unset($instructors[$i]['password']);
                 unset($instructors[$i]['hash']);
@@ -327,8 +328,9 @@ class Instructor extends User
      * @param boolean $hasOffer If to order by those with and offer set to true
      * @return string The SQL offers order string should be returned
      */
-    private function getAdditionalOffersSQLOrder($hasOffer = false){
-        if ($hasOffer !== false){
+    private function getAdditionalOffersSQLOrder($hasOffer = false)
+    {
+        if ($hasOffer !== false) {
             return ' `offer` DESC,';
         }
         return '';
@@ -377,10 +379,11 @@ class Instructor extends User
      */
     protected function getActiveInstructorsByList($list, $field, $operator = '= ?')
     {
-        $listArray = $this->getListArray($list);
+        $listArray = Format::getListArray($list);
         $instructors = [];
         $values = [];
-        for ($s = 0; $s < count($listArray); $s++) {
+        $numItems = count($listArray);
+        for ($s = 0; $s < $numItems; $s++) {
             $instructors[] = sprintf("`%s` %s", $field, $operator);
             $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
         }
@@ -399,71 +402,5 @@ class Instructor extends User
             $where = ['id' => $id];
         }
         return $this->db->update($this->table_users, ['delcache' => 1], $where);
-    }
-    
-    /**
-     * Return only the first name for the instructor
-     * @param string $name The full name for the instructor
-     * @return string Will return only the first name
-     */
-    protected function firstname($name)
-    {
-        $names = explode(' ', $name);
-        return $names[0];
-    }
-    
-    /**
-     * Format the postcode string for viewing
-     * @param string $postcodes The list of postcodes that the instructor covers
-     * @return string A formatted list will be returned to make it more easily readable
-     */
-    protected function instPostcodes($postcodes)
-    {
-        return str_replace(',', ', ', trim($postcodes, ','));
-    }
-    
-    /**
-     * Returns only the first part of a given postcode
-     * @param string $postcode This should be the give postcode to convert to the small postcode
-     * @param boolean $alpha If you only want the alpha characters and not any numeric set this to true
-     * @return string The small postcode will be returned
-     */
-    protected function smallPostcode($postcode, $alpha = false)
-    {
-        $pcode = $this->replaceIncorrectNumbers($postcode);
-        $length = strlen($pcode);
-
-        if ($length >= 5) {
-            $smallpcode = substr($pcode, 0, $length - 3);
-        } else {
-            $smallpcode = $pcode;
-        }
-        if ($alpha !== false) {
-            $smallpcode = preg_replace('/[^A-Za-z_]/', '', $smallpcode);
-        }
-
-        return strtoupper($smallpcode);
-    }
-    
-    /**
-     * Replace special characters with the corresponding number on the keyboard
-     * @param string $string This should be the string where incorrect values will be replaced
-     * @return string The correctly formatted string will be returned
-     */
-    protected function replaceIncorrectNumbers($string)
-    {
-        $characters = ['!', '"', '£', '$', '%', '^', '&', '*', '(', ')', ' '];
-        $numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ''];
-        return str_replace($characters, $numbers, trim($string));
-    }
-    
-    /**
-     * Converts a list string (comma separated) in
-     * @param string $list This should be a list in a comma separated string
-     * @return array Will return an array of values
-     */
-    protected function getListArray($list)
-    {
-        return explode(',', str_replace(' ', '', trim(trim($list), ',')));
     }
 }
