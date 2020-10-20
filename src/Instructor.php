@@ -378,17 +378,13 @@ class Instructor extends User
     protected function getActiveInstructorsByList($list, $field, $operator = '= ?')
     {
         $listArray = $this->getListArray($list);
-        if (is_array($listArray)) {
-            $instructors = [];
-            $values = [];
-            $numItems = count($listArray);
-            for ($s = 0; $s < $numItems; $s++) {
-                $instructors[] = sprintf("`%s` %s", $field, $operator);
-                $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
-            }
-            return $this->db->query("SELECT * FROM `{$this->table_users}` WHERE `active` >= 1 AND (".implode(' OR ', $instructors).");", $values);
+        $instructors = [];
+        $values = [];
+        for ($s = 0; $s < count($listArray); $s++) {
+            $instructors[] = sprintf("`%s` %s", $field, $operator);
+            $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
         }
-        return false;
+        return $this->db->query("SELECT * FROM `{$this->table_users}` WHERE `active` >= 1 AND (".implode(' OR ', $instructors).");", $values);
     }
     
     /**
