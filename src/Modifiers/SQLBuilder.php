@@ -23,7 +23,7 @@ class SQLBuilder
                 $additionalItems[] = self::formatValues($key, $item);
             }
         }
-        return implode(' AND ', $additionalItems);
+        return ' AND '.implode(' AND ', $additionalItems);
     }
     
     /**
