@@ -13,8 +13,7 @@ class Tutor extends Instructor
      */
     public function getAllTutors($active = 1)
     {
-        $where['isactive'] = (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : []);
-        return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], $where)), '*', ['id' => 'DESC']);
+        return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], ['isactive' => (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : [])])), '*', ['id' => 'DESC']);
     }
     
     /**

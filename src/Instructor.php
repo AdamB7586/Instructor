@@ -117,14 +117,11 @@ class Instructor extends User
      */
     public function updateInstructor($id, $information = [])
     {
-        if (isset($information['about'])) {
-            $information['about'] = Modifier::setNullOnEmpty($information['about']);
-        }
-        if (isset($information['offers'])) {
-            $information['offers'] = Modifier::setNullOnEmpty($information['offers']);
-        }
-        if (isset($information['notes'])) {
-            $information['notes'] = Modifier::setNullOnEmpty($information['notes']);
+        $nullIfSetAndEmpty = ['about', 'offers', 'notes'];
+        foreach($nullIfSetAndEmpty as $field){
+            if (isset($information[$field])) {
+                $information[$field] = Modifier::setNullOnEmpty($information[$field]);
+            }
         }
         return $this->db->update($this->table_users, $information, ['id' => $id]);
     }
