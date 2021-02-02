@@ -387,7 +387,7 @@ class Instructor extends User
             $instructors[] = sprintf("`%s` %s", $field, $operator);
             $values[] = (strpos($operator, 'LIKE') !== false ? '%,' : '').$listArray[$s].(strpos($operator, 'LIKE') !== false ? ',%' : '');
         }
-        return $this->db->query("SELECT * FROM `{$this->table_users}` WHERE `active` >= 1 AND (".implode(' OR ', $instructors).");", $values);
+        return $this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND (".implode(' OR ', $instructors).");", $values);
     }
     
     /**
