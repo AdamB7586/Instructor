@@ -13,17 +13,18 @@ class SQLBuilder
     /**
      * Returns any additional SQL string
      * @param array $additional This should be any additional info to query on
-     * @return string Returns the additional SQL string
+     * @return string|false Returns the additional SQL string
      */
     public static function createAdditionalString($additional)
     {
         $additionalItems = [];
-        if (is_array($additional) && !empty($additional)) {
+        if (is_array($additional) && count($additional) >= 1) {
             foreach ($additional as $key => $item) {
                 $additionalItems[] = self::formatValues($key, $item);
             }
+            return ' AND '.implode(' AND ', $additionalItems);
         }
-        return ' AND '.implode(' AND ', $additionalItems);
+        return false;
     }
     
     /**

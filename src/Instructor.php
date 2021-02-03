@@ -403,4 +403,13 @@ class Instructor extends User
         }
         return $this->db->update($this->table_users, ['delcache' => 1], $where);
     }
+    
+    /**
+     * Return only the first name for the instructor
+     * @param string $name The full name for the instructor
+     * @return string Will return only the first name
+     */
+    public function firstname($name){
+        return Format::firstname($name);
+    }
 }
