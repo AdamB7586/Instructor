@@ -13,7 +13,7 @@ class Tutor extends Instructor
      */
     public function getAllTutors($active = 1)
     {
-        return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], ['isactive' => (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : [])])), '*', ['id' => 'DESC']);
+        return $this->db->selectAll($this->instructor_table, array_filter(array_merge(['tutor' => 1], ['isactive' => (is_numeric($active) ? ($active >= 1 ? ['>=', 1] : ['<=' => 0]) : [])])), '*', ['id' => 'DESC'], 0, false);
     }
     
     /**
@@ -39,7 +39,7 @@ class Tutor extends Instructor
         if ($active === true) {
             $where['isactive'] = ['>=', 1];
         }
-        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit));
+        return $this->listInstructors($this->db->selectAll($this->instructor_table, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'RAND()']), $limit, false));
     }
     
     /**

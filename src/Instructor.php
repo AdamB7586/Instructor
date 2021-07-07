@@ -68,7 +68,7 @@ class Instructor extends User
      */
     public function getAllInstructors($active = 1)
     {
-        return $this->db->selectAll($this->table_users, ['isactive' => $active], '*', ['id' => 'DESC']);
+        return $this->db->selectAll($this->table_users, ['isactive' => $active], '*', ['id' => 'DESC'], 0, false);
     }
     
     /**
@@ -172,7 +172,7 @@ class Instructor extends User
         if ($onlyOffer === true) {
             $where['offers'] = 'IS NOT NULL';
         }
-        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offers' => 'DESC', 'RAND()']), $limit));
+        return $this->listInstructors($this->db->selectAll($this->table_users, $where, '*', (is_array($order) ? $order : ['priority' => 'DESC', 'offers' => 'DESC', 'RAND()']), $limit, false));
     }
     
     /**
@@ -194,7 +194,7 @@ class Instructor extends User
             } else {
                 $coverSQL = "";
             }
-            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$this->postcodeInfo->result[0]->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$this->postcodeInfo->result[0]->longitude}')) + sin(radians('{$this->postcodeInfo->result[0]->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." HAVING `distance` < {$distance} ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} `distance` ASC LIMIT {$limit};", SQLBuilder::$values));
+            return $this->listInstructors($this->db->query("SELECT *, (3959 * acos(cos(radians('{$this->postcodeInfo->result[0]->latitude}')) * cos(radians(lat)) * cos(radians(lng) - radians('{$this->postcodeInfo->result[0]->longitude}')) + sin(radians('{$this->postcodeInfo->result[0]->latitude}')) * sin(radians(lat)))) AS `distance` FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$coverSQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." HAVING `distance` < {$distance} ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} `distance` ASC LIMIT {$limit};", SQLBuilder::$values, false));
         }
         return $this->findInstructorsByPostcode($postcode, $limit, $hasOffer, false, $additionalInfo);
     }
@@ -224,7 +224,7 @@ class Instructor extends User
      */
     public function findInstructorsByPostcode($postcode, $limit = 50, $hasOffer = false, $onlyOffer = false, $additionalInfo = [])
     {
-        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".Format::smallPostcode($postcode).",%'{$this->querySQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", SQLBuilder::$values));
+        return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1 AND `postcodes` LIKE '%,".Format::smallPostcode($postcode).",%'{$this->querySQL}{$this->getOffersString($onlyOffer)}".SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", SQLBuilder::$values, false));
     }
     
     /**
@@ -245,7 +245,7 @@ class Instructor extends User
                 $sql[] = "`postcodes` LIKE ?";
                 $values[] = '%,'.$postcode.',%';
             }
-            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$this->getOffersString($onlyOffer)} AND ".implode(" OR ", $sql).SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", array_values(array_merge($values, SQLBuilder::$values))));
+            return $this->listInstructors($this->db->query("SELECT * FROM `{$this->table_users}` WHERE `isactive` >= 1{$this->querySQL}{$this->getOffersString($onlyOffer)} AND ".implode(" OR ", $sql).SQLBuilder::createAdditionalString($additionalInfo)." ORDER BY `priority` DESC,{$this->getAdditionalOffersSQLOrder($hasOffer)} RAND() LIMIT {$limit};", array_values(array_merge($values, SQLBuilder::$values, false))));
         }
         return false;
     }
